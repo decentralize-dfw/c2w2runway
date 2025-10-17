@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Model Viewer with FPS Controls</title>
+    <style>
+        body { margin: 0; overflow: hidden; } /* Scrollbar'ları kaldır */
+        canvas { display: block; }
+        #loading { position: absolute; top: 10px; left: 10px; color: white; display: none; } /* Başlangıçta gizli, sadece yüklenirken göster */
+        #instructions { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; text-align: center; }
+        #initiating { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 48px; display: none; }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="loading">Yükleniyor...</div>
+    <div id="instructions">Tıkla ve kilitle<br/>WASD: Yürü<br/>Boşluk: Zıpla<br/>Fare: Bak</div>
+    <div id="initiating">Initiating...</div>
+    <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; font-size: 12px;">Start</button>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.3; // HDR'ı %30'a çıkar
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.physicallyCorrectLights = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Audio Listener
+        const audioListener = new THREE.AudioListener();
+        camera.add(audioListener);
+
+        // PointerLockControls
+        const controls = new PointerLockControls(camera, document.body);
+        scene.add(controls.getObject());
+
+        const blocker = document.getElementById('instructions');
+        let firstTime = true;
+        blocker.addEventListener('click', () => {
+            controls.lock();
+        });
+
+        controls.addEventListener('lock', () => {
+            blocker.style.display = 'none';
+            firstTime = false;
+        });
+
+        controls.addEventListener('unlock', () => {
+            if (firstTime) {
+                blocker.style.display = 'block';
+            } // Sadece ilk seferde göster, sonra gösterme
+        });
+
+        // Herhangi bir click ile relock (ESC sonrası) - Tek tık için try-catch ile hata yönet
+        document.addEventListener('click', () => {
+            if (!controls.isLocked && !firstTime) {
+                controls.lock().catch((error) => {
+                    console.error('Pointer Lock hatası:', error);
+                });
+            }
+        });
+
+        // Hareket değişkenleri
+        const moveSpeed = 20;
+        const jumpVelocity = 10;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        const gravity = 9.8;
+        let onFloor = true;
+
+        const keys = { forward: false, backward: false, left: false, right: false, jump: false };
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.code) {
+                case 'KeyW': keys.forward = true; break;
+                case 'KeyS': keys.backward = true; break;
+                case 'KeyA': keys.left = true; break;
+                case 'KeyD': keys.right = true; break;
+                case 'Space': if (onFloor) { keys.jump = true; } break;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            switch (event.code) {
+                case 'KeyW': keys.forward = false; break;
+                case 'KeyS': keys.backward = false; break;
+                case 'KeyA': keys.left = false; break;
+                case 'KeyD': keys.right = false; break;
+                case 'Space': keys.jump = false; break;
+            }
+        });
+
+        // Gerçekçi ortam haritası (HDR) - Background olarak da göster
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        new RGBELoader().load('https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/DARK-NEBULA.hdr', (texture) => {
+            const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+            scene.environment = envMap;
+            scene.background = envMap; // Background olarak göster
+            texture.dispose();
+            pmremGenerator.dispose();
+        });
+
+        // Işıklar
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        scene.add(directionalLight);
+        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.1);
+        hemisphereLight.position.set(0, 20, 0);
+        scene.add(hemisphereLight);
+
+        // Güçlü dramatik directional ışık
+        const dramaticLight = new THREE.DirectionalLight(0xffffff, 100);
+        dramaticLight.position.set(0, 30, 0);
+        dramaticLight.castShadow = true;
+        dramaticLight.shadow.mapSize.width = 4096;
+        dramaticLight.shadow.mapSize.height = 4096;
+        dramaticLight.shadow.camera.near = 0.5;
+        dramaticLight.shadow.camera.far = 100;
+        dramaticLight.shadow.camera.left = -20;
+        dramaticLight.shadow.camera.right = 20;
+        dramaticLight.shadow.camera.top = 20;
+        dramaticLight.shadow.camera.bottom = -20;
+        dramaticLight.shadow.bias = -0.005;
+        scene.add(dramaticLight);
+
+        // GLTF Loader
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+        dracoLoader.setDecoderConfig({ type: 'js' });
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
+        gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+
+        // Ana mekan GLB'sini yükle
+        const spaceUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/space-opt.glb';
+        document.getElementById('loading').style.display = 'block'; // Yükleme sırasında göster
+        gltfLoader.load(
+            spaceUrl,
+            (gltf) => {
+                const spaceModel = gltf.scene;
+                spaceModel.position.set(0, 0, 0);
+                spaceModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(spaceModel);
+                console.log('Mekan yüklendi!');
+                document.getElementById('loading').style.display = 'none'; // Yükleme tamamlanınca gizle
+            },
+            (xhr) => {
+                document.getElementById('loading').textContent = `Yükleniyor: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`;
+            },
+            (error) => {
+                console.error('Mekan yükleme hatası:', error);
+                document.getElementById('loading').textContent = 'Hata: Mekan yüklenemedi!';
+            }
+        );
+
+        // Model URL'leri
+        const modelUrls = [
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2-glb/main/mutantbacon-900-opt-v86.glb', // Model 1
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2-glb/main/squallo-900-opt-v101.glb', // Model 2
+            'https://raw.githubusercontent.com/decentralize-dfw/c2w2-glb/main/mutantbacon-900-opt-v86.glb' // Model 3 (placeholder, user only gave two)
+        ];
+
+        const models = []; // {model, mixer, animated: false}
+
+        function loadModel(index) {
+            return new Promise((resolve, reject) => {
+                gltfLoader.load(
+                    modelUrls[index - 1],
+                    (gltf) => {
+                        const modelScene = gltf.scene;
+                        modelScene.position.set(0, 0, 0);
+                        modelScene.traverse((child) => {
+                            if (child.isMesh) {
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                            }
+                        });
+                        scene.add(modelScene);
+
+                        let mixer = null;
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            mixer = new THREE.AnimationMixer(modelScene);
+                            gltf.animations.forEach((clip) => {
+                                const action = mixer.clipAction(clip);
+                                action.loop = THREE.LoopRepeat; // Loop yap
+                            });
+                        }
+
+                        models[index] = { model: modelScene, mixer, animated: false };
+                        console.log(`Model ${index} yüklendi (animasyonsuz)`);
+                        resolve();
+                    },
+                    undefined,
+                    (error) => {
+                        console.error(`Model ${index} yükleme hatası:`, error);
+                        reject(error);
+                    }
+                );
+            });
+        }
+
+        function animateModel(index) {
+            const entry = models[index];
+            if (entry && entry.mixer && entry.mixer._actions.length > 0) {
+                entry.mixer.stopAllAction();
+                entry.animated = true;
+                entry.mixer.time = 0;
+                entry.mixer.update(0);
+                entry.mixer._actions.forEach(action => {
+                    action.reset();
+                    action.play();
+                });
+                console.log(`Model ${index} animasyonu tetiklendi (loop'ta)`);
+            } else {
+                console.log(`Model ${index} için animasyon yok veya mixer hazır değil`);
+            }
+        }
+
+        function deleteModel(index) {
+            const entry = models[index];
+            if (entry) {
+                if (entry.mixer) entry.mixer.stopAllAction();
+                scene.remove(entry.model);
+                entry.model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.geometry.dispose();
+                        child.material.dispose();
+                    }
+                });
+                models[index] = null;
+                console.log(`Model ${index} silindi`);
+            }
+        }
+
+        function wait(seconds) {
+            return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+        }
+
+        // Ses için
+        const audioLoader = new THREE.AudioLoader();
+        let sound1;
+        const soundUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part1-clean-v3-3-kiddo.mp3';
+
+        function loadAndPlaySound() {
+            audioLoader.load(soundUrl, (buffer) => {
+                sound1 = new THREE.Audio(audioListener);
+                sound1.setBuffer(buffer);
+                sound1.setLoop(false); // Loop yok, istersen true yap
+                sound1.setVolume(0.5);
+                sound1.play();
+                console.log('Sound 1 play edildi');
+            }, undefined, (error) => {
+                console.error('Ses yükleme hatası:', error);
+            });
+        }
+
+        function stopSound() {
+            if (sound1 && sound1.isPlaying) {
+                sound1.stop();
+                console.log('Sound 1 stop edildi');
+            }
+        }
+
+        async function runSequence() {
+            document.getElementById('initiating').style.display = 'block';
+            try {
+                await loadModel(1);
+                await wait(5);
+                document.getElementById('initiating').style.display = 'none'; // 5 sn sonra initiating'i kaldır
+                animateModel(1);
+                loadAndPlaySound(); // Animate 1 ile aynı zamanda ses play
+                await wait(15);
+                await loadModel(2);
+                await wait(15);
+                deleteModel(1);
+                animateModel(2);
+                await wait(15);
+                await loadModel(3);
+                await wait(15);
+                deleteModel(2);
+                animateModel(3);
+                await wait(30);
+                deleteModel(3);
+                stopSound(); // Delete 3 ile beraber ses stop
+            } catch (error) {
+                console.error('Sekans hatası:', error);
+            } finally {
+                document.getElementById('initiating').style.display = 'none'; // Her halükarda gizle
+            }
+        }
+
+        // Start button click event
+        const startButton = document.getElementById('startButton');
+        startButton.addEventListener('click', () => {
+            runSequence();
+            startButton.style.display = 'none';
+        });
+
+        // Kamera başlangıç pozisyonu
+        camera.position.set(0, 1.6, 10);
+        camera.lookAt(0, 0, 0);
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (controls.isLocked) {
+                const time = performance.now();
+                const delta = (time - prevTime) / 1000;
+                prevTime = time;
+
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+                velocity.y -= gravity * delta;
+
+                direction.z = Number(keys.forward) - Number(keys.backward);
+                direction.x = Number(keys.right) - Number(keys.left);
+                direction.normalize();
+
+                if (keys.forward || keys.backward) velocity.z -= direction.z * moveSpeed * delta;
+                if (keys.left || keys.right) velocity.x -= direction.x * moveSpeed * delta;
+
+                if (keys.jump && onFloor) {
+                    velocity.y = jumpVelocity;
+                    onFloor = false;
+                }
+
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+                controls.getObject().position.y += (velocity.y * delta);
+
+                if (controls.getObject().position.y < 1.6) {
+                    velocity.y = 0;
+                    controls.getObject().position.y = 1.6;
+                    onFloor = true;
+                }
+            }
+
+            // Tüm aktif mixer'ları güncelle
+            models.forEach(entry => {
+                if (entry && entry.mixer && entry.animated) {
+                    entry.mixer.update(clock.getDelta());
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
