@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js Model Viewer with FPS Controls</title>
+    <style>
+        body { margin: 0; overflow: hidden; } /* Scrollbar'ları kaldır */
+        canvas { display: block; }
+        #loading { position: absolute; top: 10px; left: 10px; color: white; }
+        #instructions { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; text-align: center; }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="loading">Yükleniyor...</div>
+    <div id="instructions">Tıkla ve kilitle<br/>WASD: Yürü<br/>Boşluk: Zıpla<br/>Fare: Bak</div>
+    <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; font-size: 12px;">Start</button>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.1; // HDR'ı karartmak için exposure'ı 0.1'e düşür
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.physicallyCorrectLights = true;
+        document.body.appendChild(renderer.domElement);
+
+        // PointerLockControls (FPS tarzı kamera kontrolü)
+        const controls = new PointerLockControls(camera, document.body);
+        scene.add(controls.getObject());
+
+        const blocker = document.getElementById('instructions');
+        blocker.addEventListener('click', () => {
+            controls.lock();
+        });
+
+        controls.addEventListener('lock', () => {
+            blocker.style.display = 'none';
+        });
+
+        controls.addEventListener('unlock', () => {
+            blocker.style.display = 'block';
+        });
+
+        // Hareket değişkenleri
+        const moveSpeed = 20; // Yürüme hızı
+        const jumpVelocity = 10; // Zıplama hızını düşür (normalleştir)
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        const gravity = 9.8; // Yerçekimi
+        let onFloor = true;
+
+        const keys = { forward: false, backward: false, left: false, right: false, jump: false };
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.code) {
+                case 'KeyW': keys.forward = true; break;
+                case 'KeyS': keys.backward = true; break;
+                case 'KeyA': keys.left = true; break;
+                case 'KeyD': keys.right = true; break;
+                case 'Space': if (onFloor) { keys.jump = true; } break;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            switch (event.code) {
+                case 'KeyW': keys.forward = false; break;
+                case 'KeyS': keys.backward = false; break;
+                case 'KeyA': keys.left = false; break;
+                case 'KeyD': keys.right = false; break;
+                case 'Space': keys.jump = false; break;
+            }
+        });
+
+        // Gerçekçi ortam haritası (HDR) - Background olarak da göster
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        new RGBELoader().load('https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/DARK-NEBULA.hdr', (texture) => {
+            const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+            scene.environment = envMap;
+            scene.background = envMap; // Background olarak göster
+            texture.dispose();
+            pmremGenerator.dispose();
+        });
+
+        // Işıklar
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Düşük ambient
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        scene.add(directionalLight);
+        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.1); // Düşük hemisphere
+        hemisphereLight.position.set(0, 20, 0);
+        scene.add(hemisphereLight);
+
+        // Güçlü dramatik directional ışık (0,30,0)'dan, intensity 100
+        const dramaticLight = new THREE.DirectionalLight(0xffffff, 300);
+        dramaticLight.position.set(0, 30, 0);
+        dramaticLight.castShadow = true;
+        dramaticLight.shadow.mapSize.width = 4096; // Yüksek kaliteli gölgeler
+        dramaticLight.shadow.mapSize.height = 4096;
+        dramaticLight.shadow.camera.near = 0.5;
+        dramaticLight.shadow.camera.far = 100;
+        dramaticLight.shadow.camera.left = -20;
+        dramaticLight.shadow.camera.right = 20;
+        dramaticLight.shadow.camera.top = 20;
+        dramaticLight.shadow.camera.bottom = -20;
+        dramaticLight.shadow.bias = -0.005; // Gölge artifact'larını düzelt
+        scene.add(dramaticLight);
+
+        // GLTF Loader
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+        dracoLoader.setDecoderConfig({ type: 'js' });
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
+        gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+
+        let model, mixer;
+        const modelUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2-glb/main/curator-900-opt-v67.glb';
+
+        // Ana mekan GLB'sini yükle
+        const spaceUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/space-opt.glb';
+        gltfLoader.load(
+            spaceUrl,
+            (gltf) => {
+                const spaceModel = gltf.scene;
+                spaceModel.position.set(0, 0, 0); // Mekan sabit 0,0,0'da
+                spaceModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(spaceModel);
+                console.log('Mekan yüklendi!');
+            },
+            (xhr) => {
+                console.log('Mekan yükleniyor: ' + (xhr.loaded / xhr.total * 100) + '%');
+            },
+            (error) => {
+                console.error('Mekan yükleme hatası:', error);
+            }
+        );
+
+        // Start button click event: Modeli yükle
+        const startButton = document.getElementById('startButton');
+        startButton.addEventListener('click', () => {
+            gltfLoader.load(
+                modelUrl,
+                (gltf) => {
+                    model = gltf.scene;
+                    model.position.set(0, 0, 0); // Model sabit 0,0,0'da
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    scene.add(model);
+
+                    // Animasyonlar (eğer varsa loop'ta oynat)
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        mixer = new THREE.AnimationMixer(model);
+                        gltf.animations.forEach((clip) => {
+                            const action = mixer.clipAction(clip);
+                            action.loop = THREE.LoopRepeat;
+                            action.play();
+                        });
+                        console.log('Animasyonlar başladı:', gltf.animations.map(a => a.name));
+                    } else {
+                        console.log('Modelde animasyon yok.');
+                    }
+
+                    console.log('Model yüklendi!');
+                    startButton.style.display = 'none'; // Button'ı gizle
+                },
+                (xhr) => {
+                    console.log('Model yükleniyor: ' + (xhr.loaded / xhr.total * 100) + '%');
+                },
+                (error) => {
+                    console.error('Model yükleme hatası:', error);
+                }
+            );
+        });
+
+        // Kamera başlangıç pozisyonu (modelin biraz gerisinde)
+        camera.position.set(0, 1.6, 10); // Göz seviyesi (1.6m), 10 birim geride
+        camera.lookAt(0, 0, 0);
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (controls.isLocked) {
+                const time = performance.now();
+                const delta = (time - prevTime) / 1000;
+                prevTime = time;
+
+                velocity.x -= velocity.x * 10.0 * delta; // Sürtünme
+                velocity.z -= velocity.z * 10.0 * delta;
+                velocity.y -= gravity * delta; // Yerçekimi
+
+                direction.z = Number(keys.forward) - Number(keys.backward);
+                direction.x = Number(keys.right) - Number(keys.left);
+                direction.normalize();
+
+                if (keys.forward || keys.backward) velocity.z -= direction.z * moveSpeed * delta;
+                if (keys.left || keys.right) velocity.x -= direction.x * moveSpeed * delta;
+
+                if (keys.jump && onFloor) {
+                    velocity.y = jumpVelocity;
+                    onFloor = false;
+                }
+
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+                controls.getObject().position.y += (velocity.y * delta);
+
+                if (controls.getObject().position.y < 1.6) { // Zemin seviyesi (göz yüksekliği)
+                    velocity.y = 0;
+                    controls.getObject().position.y = 1.6;
+                    onFloor = true;
+                }
+            }
+
+            if (mixer) mixer.update(clock.getDelta());
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
