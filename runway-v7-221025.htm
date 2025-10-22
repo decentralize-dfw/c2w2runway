@@ -112,6 +112,23 @@
             text-align: center;
             display: none;
         }
+        #hoverText {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,.55);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.25);
+            z-index: 10;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+        }
     </style>
     <script type="importmap">
         {
@@ -136,6 +153,7 @@
     <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Start</button>
     <button id="fullscreenButton" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Full Screen</button>
     <div id="description"></div>
+    <div id="hoverText">Click to open link</div>
     <script type="module">
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -408,22 +426,39 @@
             'Model 49: Memelegance Suit FUP, stylish and modern.' // Model 49
         ];
         const models = [];
-        // Raycaster for clicking
+        // Raycaster for clicking and hovering
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let clickableObject = null;
-        function onMouseClick(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(scene.children, true);
-            for (let i = 0; i < intersects.length; i++) {
-                if (intersects[i].object.name === 'balls') {
-                    window.open('https://www.aynenkankabeyler.com', '_blank');
-                    break;
-                }
-            }
+        function onMouseMove(event) {
+    if (controls.isLocked) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        const hoverText = document.getElementById('hoverText');
+        if (intersects.length > 0 && (intersects[0].object.name === 'balls' || intersects[0].object.name === 'Body')) {
+            hoverText.style.display = 'block';
+            document.body.style.cursor = 'pointer';
+        } else {
+            hoverText.style.display = 'none';
+            document.body.style.cursor = 'auto';
         }
+    }
+}
+        function onMouseClick(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    for (let i = 0; i < intersects.length; i++) {
+        if (intersects[i].object.name === 'balls' || intersects[i].object.name === 'Body') {
+            window.open('https://www.digitalforgerywork.shop/c2w2', '_blank');
+            break;
+        }
+    }
+}
+        window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('click', onMouseClick);
         function loadModel(index) {
             return new Promise((resolve, reject) => {
@@ -438,12 +473,12 @@
                                 child.receiveShadow = true;
                                 // Specific handling for model 49's 'balls' object with material 'TT'
                                 if (index === 49 && child.name === 'balls' && child.material.name === 'TT') {
-                                    child.material.emissiveIntensity = 50; // High emissive for intense bloom on this object only
+                                    child.material.emissiveIntensity = 100; // High emissive for intense bloom on this object only
                                     clickableObject = child;
                                 } else {
                                     // Low emissive for others if needed, but general bloom is low
                                     if (child.material.emissive) {
-                                        child.material.emissiveIntensity = 0.1; // Low for general
+                                        child.material.emissiveIntensity = 1; // Low for general
                                     }
                                 }
                             }
