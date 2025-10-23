@@ -512,73 +512,65 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         
 
 
-        // EKLENDİ: VR kontrollerini kuran fonksiyon (HATASIZ)
+        
         function setupVRControls() {
-            vrControlsActive = true;
-            // İstenmeyen UI elementlerini gizle
-            document.getElementById('fullscreenButton').style.display = 'none';
-            document.getElementById('projectInfoButton').style.display = 'none';
-            document.getElementById('studioInfoButton').style.display = 'none';
-            document.getElementById('hintButton').style.display = 'none';
-            document.getElementById('creatorsNoteButton').style.display = 'none';
-            document.getElementById('instructions').style.display = 'none'; // Orijinal "Click to Enter"ı gizle
+    vrControlsActive = true;
+    document.getElementById('fullscreenButton').style.display = 'none';
+    document.getElementById('projectInfoButton').style.display = 'none';
+    document.getElementById('studioInfoButton').style.display = 'none';
+    document.getElementById('hintButton').style.display = 'none';
+    document.getElementById('creatorsNoteButton').style.display = 'none';
+    document.getElementById('instructions').style.display = 'none';
 
-            // VR Button oluştur ve stil ver
-            const vrButton = VRButton.createButton(renderer);
-            vrButton.textContent = 'Touch to Start';
-            vrButton.id = 'VRButton'; // CSS stilini uygulamak için
-            document.body.appendChild(vrButton);
+    const vrButton = VRButton.createButton(renderer);
+    vrButton.textContent = 'Touch to Start';
+    vrButton.id = 'VRButton';
+    document.body.appendChild(vrButton);
 
-            // VR Controller'ları ayarla
-            const controllerModelFactory = new XRControllerModelFactory();
+    // VR Controller'ları ayarla
+    const controllerModelFactory = new XRControllerModelFactory();
+    const controller1 = renderer.xr.getController(0);
+    const controllerGrip1 = renderer.xr.getControllerGrip(0);
+    controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+    playerRig.add(controller1);
+    playerRig.add(controllerGrip1);
+    vrControllers.push(controller1);
 
-            // Controller 1 (Sol)
-            const controller1 = renderer.xr.getController(0);
-            const controllerGrip1 = renderer.xr.getControllerGrip(0);
-            controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-            playerRig.add(controller1); // Rig'e ekle
-            playerRig.add(controllerGrip1); // Rig'e ekle
-            vrControllers.push(controller1);
+    const controller2 = renderer.xr.getController(1);
+    const controllerGrip2 = renderer.xr.getControllerGrip(1);
+    controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+    playerRig.add(controller2);
+    playerRig.add(controllerGrip2);
+    vrControllers.push(controller2);
 
-            // Controller 2 (Sağ)
-            const controller2 = renderer.xr.getController(1);
-            const controllerGrip2 = renderer.xr.getControllerGrip(1);
-            controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-            playerRig.add(controller2); // Rig'e ekle
-            playerRig.add(controllerGrip2); // Rig'e ekle
-            vrControllers.push(controller2);
+    // VR oturumu başladığında
+    renderer.xr.addEventListener('sessionstart', () => {
+        console.log('VR Session Started');
 
-            // VR oturumu başladığında sekansı tetikle
-            renderer.xr.addEventListener('sessionstart', () => {
-                console.log('VR Session Started');
+        // AudioContext'i başlat
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
+                console.log('AudioContext resumed');
+                // Boş ses çal
+                const emptySound = audioListener.context.createBufferSource();
+                emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
+                emptySound.connect(audioListener.context.destination);
+                emptySound.start();
+            }).catch(e => console.error('AudioContext resume failed:', e));
+        }
 
-                // DÜZELTME: SESİ AÇMAK İÇİN "BOŞ" SES BAŞLAT
-                try {
-                    const emptySound = audioListener.context.createBufferSource();
-                    emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050); // 1 sample'lık boş buffer
-                    emptySound.connect(audioListener.context.destination);
-                    emptySound.start();
-                    console.log('Audio Context başlatıldı.');
-                } catch (e) {
-                    console.error('Audio Context başlatılamadı:', e);
-                }
-                // SES DÜZELTMESİ BİTTİ
+        stopIntroSound();
+        document.getElementById('startButton').style.display = 'none';
+        backgroundImg.style.display = 'none';
+        document.getElementById('initiating').style.display = 'block';
+        runSequence();
+    });
 
-                stopIntroSound();
-                document.getElementById('startButton').style.display = 'none';
-                backgroundImg.style.display = 'none';
-                
-                // Gecikmeyi kaldır, tıklandığı anda başlat
-                document.getElementById('initiating').style.display = 'block';
-                runSequence(); // Sekansı hemen başlat
-            });
-
-            // VR oturumu bittiğinde
-            renderer.xr.addEventListener('sessionend', () => {
-                console.log('VR Session Ended');
-                window.location.reload(); // En temiz yol, sayfayı yenilemek
-            });
-        } // <--- setupVRControls fonksiyonu burada biter
+    renderer.xr.addEventListener('sessionend', () => {
+        console.log('VR Session Ended');
+        window.location.reload();
+    });
+}
 
 
         // EKLENDİ: Ortamı (Desktop veya VR) kuran ana fonksiyon
@@ -957,13 +949,13 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         const audioLoader = new THREE.AudioLoader();
         let sound1Buffer, sound2Buffer, sound3Buffer, sound4Buffer, sound5Buffer, sound6Buffer, introSoundBuffer;
         let sound1, sound2, sound3, sound4, sound5, sound6, introSound;
-        const soundUrl1 = 'https.githubusercontent.com/decentralize-dfw/c2w2runway/main/part1-clean-v3-3-kiddo.mp3';
-        const soundUrl2 = 'https.githubusercontent.com/decentralize-dfw/c2w2runway/main/part2-clean-v3-3.mp3';
-        const soundUrl3 = 'https.githubusercontent.com/decentralize-dfw/c2w2runway/main/part3-clean-v3-2.mp3';
-        const soundUrl4 = 'https.githubusercontent.com/decentralize-dfw/c2w2runway/main/part4-clean-v3-3.mp3';
-        const soundUrl5 = 'https.githubusercontent.com/decentralize-dfw/c2w2runway/main/part5-clean-v3-3.mp3';
-        const soundUrl6 = 'https.githubusercontent.com/decentralize-dfw/c2w2runway/main/part6-clean-v3-2.mp3';
-        const introSoundUrl = 'https.githubusercontent.com/decentralize-dfw/vea_001/main/retailthreejs.mp3'; 
+      const soundUrl1 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part1-clean-v3-3-kiddo.mp3';
+const soundUrl2 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part2-clean-v3-3.mp3';
+const soundUrl3 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part3-clean-v3-2.mp3';
+const soundUrl4 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part4-clean-v3-3.mp3';
+const soundUrl5 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part5-clean-v3-3.mp3';
+const soundUrl6 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part6-clean-v3-2.mp3';
+const introSoundUrl = 'https://raw.githubusercontent.com/decentralize-dfw/vea_001/main/retailthreejs.mp3';
         audioLoader.load(soundUrl1, (buffer) => { sound1Buffer = buffer; console.log('Sound 1 buffer yüklendi'); });
         audioLoader.load(soundUrl2, (buffer) => { sound2Buffer = buffer; console.log('Sound 2 buffer yüklendi'); });
         audioLoader.load(soundUrl3, (buffer) => { sound3Buffer = buffer; console.log('Sound 3 buffer yüklendi'); });
@@ -976,17 +968,28 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             playIntroSound(); 
         });
         function playIntroSound() {
-            if (introSoundBuffer) {
+    if (introSoundBuffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 introSound = new THREE.Audio(audioListener);
                 introSound.setBuffer(introSoundBuffer);
                 introSound.setLoop(true);
                 introSound.setVolume(0.5);
                 introSound.play();
-                console.log('Intro sound play edildi');
-            } else {
-                console.error('Intro sound buffer hazır değil');
-            }
+                console.log('Intro sound played');
+            }).catch(e => console.error('Intro sound AudioContext resume failed:', e));
+        } else {
+            introSound = new THREE.Audio(audioListener);
+            introSound.setBuffer(introSoundBuffer);
+            introSound.setLoop(true);
+            introSound.setVolume(0.5);
+            introSound.play();
+            console.log('Intro sound played');
         }
+    } else {
+        console.error('Intro sound buffer not ready');
+    }
+}
         function stopIntroSound() {
             if (introSound && introSound.isPlaying) { 
                 introSound.stop(); 
@@ -994,77 +997,150 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             }
         }
         function playSound1() {
-            if (sound1Buffer) {
+    if (sound1Buffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 sound1 = new THREE.Audio(audioListener);
                 sound1.setBuffer(sound1Buffer);
                 sound1.setLoop(false);
                 sound1.setVolume(0.5);
                 sound1.play();
-                console.log('Sound 1 play edildi');
-            } else {
-                console.error('Sound 1 buffer hazır değil');
-            }
+                console.log('Sound 1 played');
+            }).catch(e => console.error('Sound 1 AudioContext resume failed:', e));
+        } else {
+            sound1 = new THREE.Audio(audioListener);
+            sound1.setBuffer(sound1Buffer);
+            sound1.setLoop(false);
+            sound1.setVolume(0.5);
+            sound1.play();
+            console.log('Sound 1 played');
         }
-        function playSound2() {
-            if (sound2Buffer) {
+    } else {  
+        console.error('Sound 1 buffer not ready');
+    }
+}
+
+function playSound2() {
+    if (sound2Buffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 sound2 = new THREE.Audio(audioListener);
                 sound2.setBuffer(sound2Buffer);
                 sound2.setLoop(false);
                 sound2.setVolume(0.5);
                 sound2.play();
-                console.log('Sound 2 play edildi');
-            } else {
-                console.error('Sound 2 buffer hazır değil');
-            }
+                console.log('Sound 2 played');
+            }).catch(e => console.error('Sound 2 AudioContext resume failed:', e));
+        } else {
+            sound2 = new THREE.Audio(audioListener);
+            sound2.setBuffer(sound2Buffer);
+            sound2.setLoop(false);
+            sound2.setVolume(0.5);
+            sound2.play();
+            console.log('Sound 2 played');
         }
-        function playSound3() {
-            if (sound3Buffer) {
+    } else {
+        console.error('Sound 2 buffer not ready');
+    }
+}
+
+function playSound3() {
+    if (sound3Buffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 sound3 = new THREE.Audio(audioListener);
                 sound3.setBuffer(sound3Buffer);
                 sound3.setLoop(false);
                 sound3.setVolume(0.5);
                 sound3.play();
-                console.log('Sound 3 play edildi');
-            } else {
-                console.error('Sound 3 buffer hazır değil');
-            }
+                console.log('Sound 3 played');
+            }).catch(e => console.error('Sound 3 AudioContext resume failed:', e));
+        } else {
+            sound3 = new THREE.Audio(audioListener);
+            sound3.setBuffer(sound3Buffer);
+            sound3.setLoop(false);
+            sound3.setVolume(0.5);
+            sound3.play();
+            console.log('Sound 3 played');
         }
-        function playSound4() {
-            if (sound4Buffer) {
+    } else {
+        console.error('Sound 3 buffer not ready');
+    }
+}
+
+function playSound4() {
+    if (sound4Buffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 sound4 = new THREE.Audio(audioListener);
                 sound4.setBuffer(sound4Buffer);
                 sound4.setLoop(false);
                 sound4.setVolume(0.5);
                 sound4.play();
-                console.log('Sound 4 play edildi');
-            } else {
-                console.error('Sound 4 buffer hazır değil');
-            }
+                console.log('Sound 4 played');
+            }).catch(e => console.error('Sound 4 AudioContext resume failed:', e));
+        } else {
+            sound4 = new THREE.Audio(audioListener);
+            sound4.setBuffer(sound4Buffer);
+            sound4.setLoop(false);
+            sound4.setVolume(0.5);
+            sound4.play();
+            console.log('Sound 4 played');
         }
-        function playSound5() {
-            if (sound5Buffer) {
+    } else {
+        console.error('Sound 4 buffer not ready');
+    }
+}
+
+function playSound5() {
+    if (sound5Buffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 sound5 = new THREE.Audio(audioListener);
                 sound5.setBuffer(sound5Buffer);
                 sound5.setLoop(false);
                 sound5.setVolume(0.5);
                 sound5.play();
-                console.log('Sound 5 play edildi');
-            } else {
-                console.error('Sound 5 buffer hazır değil');
-            }
+                console.log('Sound 5 played');
+            }).catch(e => console.error('Sound 5 AudioContext resume failed:', e));
+        } else {
+            sound5 = new THREE.Audio(audioListener);
+            sound5.setBuffer(sound5Buffer);
+            sound5.setLoop(false);
+            sound5.setVolume(0.5);
+            sound5.play();
+            console.log('Sound 5 played');
         }
-        function playSound6() {
-            if (sound6Buffer) {
+    } else {
+        console.error('Sound 5 buffer not ready');
+    }
+}
+
+function playSound6() {
+    if (sound6Buffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
                 sound6 = new THREE.Audio(audioListener);
                 sound6.setBuffer(sound6Buffer);
                 sound6.setLoop(false);
                 sound6.setVolume(0.5);
                 sound6.play();
-                console.log('Sound 6 play edildi');
-            } else {
-                console.error('Sound 6 buffer hazır değil');
-            }
+                console.log('Sound 6 played');
+            }).catch(e => console.error('Sound 6 AudioContext resume failed:', e));
+        } else {
+            sound6 = new THREE.Audio(audioListener);
+            sound6.setBuffer(sound6Buffer);
+            sound6.setLoop(false);
+            sound6.setVolume(0.5);
+            sound6.play();
+            console.log('Sound 6 played');
         }
+    } else {
+        console.error('Sound 6 buffer not ready');
+    }
+}
+
+
         function stopSound1() {
             if (sound1 && sound1.isPlaying) { sound1.stop(); console.log('Sound 1 stop edildi'); }
         }
@@ -1547,155 +1623,139 @@ All these transformations, these ideas, are not presented as neat “10 new conc
 
         const clock = new THREE.Clock();
         
-        // DEĞİŞTİ: Animate fonksiyonu hem Desktop hem VR'ı yönetir
+       
         function animate() {
-            const delta = clock.getDelta();
-            const time = performance.now();
-            const physicsDelta = (time - prevTime) / 1000;
-            prevTime = time;
-            
-            // BÖLÜM 1: VR HAREKET MANTIĞI (GÜNCELLENDİ)
-            if (vrControlsActive && renderer.xr.isPresenting) {
-                
-                // Hız sönümlemesi
-                velocity.x -= velocity.x * 10.0 * physicsDelta;
-                velocity.z -= velocity.z * 10.0 * physicsDelta;
-                // Yerçekimi
-                velocity.y -= gravity * physicsDelta;
+    const delta = clock.getDelta();
+    const time = performance.now();
+    const physicsDelta = (time - prevTime) / 1000;
+    prevTime = time;
 
-                let moveSpeed = baseMoveSpeed; // Normal hız
-                let moveDirection = new THREE.Vector3(0, 0, 0);
+    // BÖLÜM 1: VR HAREKET MANTIĞI
+    if (vrControlsActive && renderer.xr.isPresenting) {
+        // Hız sönümlemesi
+        velocity.x -= velocity.x * 10.0 * physicsDelta;
+        velocity.z -= velocity.z * 10.0 * physicsDelta;
+        velocity.y -= gravity * physicsDelta;
 
-                // Sol kontrolcü (index 0) hareketi yönetir
-                const moveController = vrControllers[0]; 
-                if (moveController && moveController.gamepad) {
-                    const gamepad = moveController.gamepad;
-                    // Analog çubuk (axes 2 ve 3)
-                    if (Math.abs(gamepad.axes[2]) > 0.1) {
-                        moveDirection.x = gamepad.axes[2];
-                    }
-                    if (Math.abs(gamepad.axes[3]) > 0.1) {
-                        moveDirection.z = gamepad.axes[3];
-                    }
+        let moveSpeed = baseMoveSpeed; // Normal hız
+        let moveDirection = new THREE.Vector3(0, 0, 0);
 
-                    // Sol Tetik (index 1) veya Sıkma (index 0) ile Koşma (Sprint)
-                    // Quest 3'te genellikle "tetik" (trigger) index 1'dir.
-                    if ((gamepad.buttons[1] && gamepad.buttons[1].pressed) || (gamepad.buttons[0] && gamepad.buttons[0].pressed)) {
-                        moveSpeed = baseMoveSpeed * 4; // 4 kat hız
-                    }
-                }
-
-                // Sağ kontrolcü (index 1) bakış yönünü (dönüş) yönetir
-                const turnController = vrControllers[1];
-                if (turnController && turnController.gamepad) {
-                    const gamepad = turnController.gamepad;
-                    // Sağ analog çubuğun X ekseni (axes 2)
-                    // Bu, "snap turn" (hızlı dönüş) veya "smooth turn" (akıcı dönüş) yapar.
-                    // Şimdilik akıcı dönüş yapalım.
-                    if (Math.abs(gamepad.axes[2]) > 0.2) {
-                        // Kamera rig'ini Y ekseninde döndür
-                        // Negatif değer ekliyoruz çünkü sağa itme (pozitif X) sağa dönme (negatif rotasyon) demektir.
-                        playerRig.rotateY(-gamepad.axes[2] * delta * 2.0); // Dönüş hızını ayarlayabilirsiniz
-                    }
-                }
-
-                // Hareketi kameranın baktığı yöne göre hesapla
-                if (moveDirection.length() > 0.01) {
-                    const cameraDirection = new THREE.Vector3();
-                    camera.getWorldDirection(cameraDirection); // Kameranın baktığı yönü al
-                    cameraDirection.y = 0; // Y eksenini sıfırla (havada uçmayalım)
-                    cameraDirection.normalize();
-
-                    // Sağa/sola hareket için dik (çapraz) vektörü bul
-                    const rightDirection = new THREE.Vector3().crossVectors(camera.up, cameraDirection).normalize().negate();
-
-                    // İleri/geri hareketi kameranın baktığı yöne göre ayarla
-                    const forwardVector = cameraDirection.multiplyScalar(moveDirection.z * moveSpeed * physicsDelta);
-                    // Sağa/sola hareketi kameranın sağına göre ayarla
-                    const rightVector = rightDirection.multiplyScalar(moveDirection.x * moveSpeed * physicsDelta);
-
-                    // İki yönü toplayarak hıza ekle
-                    velocity.x += forwardVector.x + rightVector.x;
-                    velocity.z += forwardVector.z + rightVector.z;
-                }
-
-                // Hareketi playerRig'e uygula (böylece kamera da hareket eder)
-                playerRig.position.x += velocity.x * physicsDelta;
-                playerRig.position.z += velocity.z * physicsDelta;
-                playerRig.position.y += velocity.y * physicsDelta;
-
-                // Zemin kontrolü
-                if (playerRig.position.y < 1.6) {
-                    velocity.y = 0;
-                    playerRig.position.y = 1.6;
-                    onFloor = true;
-                } else {
-                    onFloor = false;
-                }
-
+        // Sol kontrolcü (index 0) hareketi yönetir
+        const moveController = vrControllers[0];
+        if (moveController && moveController.gamepad) {
+            const gamepad = moveController.gamepad;
+            // Analog çubuk (axes 2: X ekseni, axes 3: Y ekseni)
+            if (Math.abs(gamepad.axes[2]) > 0.2) { // Ölü bölge (dead zone) kontrolü
+                moveDirection.x = gamepad.axes[2]; // Sağa/sola hareket
             }
-            // BÖLÜM 2: DESKTOP HAREKET MANTIĞI
-            else if (!vrControlsActive && controls && controls.isLocked) {
-                velocity.x -= velocity.x * 10.0 * physicsDelta;
-                velocity.z -= velocity.z * 10.0 * physicsDelta;
-                velocity.y -= gravity * physicsDelta;
-                
-                direction.z = Number(keys.forward) - Number(keys.backward);
-                direction.x = Number(keys.right) - Number(keys.left);
-                direction.normalize();
-                
-                if (keys.forward || keys.backward) velocity.z -= direction.z * currentMoveSpeed * physicsDelta;
-                if (keys.left || keys.right) velocity.x -= direction.x * currentMoveSpeed * physicsDelta;
-                
-                if (keys.jump && onFloor) {
-                    velocity.y = jumpVelocity;
-                    onFloor = false;
-                }
-                
-                controls.moveRight(-velocity.x * physicsDelta);
-                controls.moveForward(-velocity.z * physicsDelta);
-                controls.getObject().position.y += (velocity.y * physicsDelta);
-                
-                if (controls.getObject().position.y < 1.6) {
-                    velocity.y = 0;
-                    controls.getObject().position.y = 1.6;
-                    onFloor = true;
-                }
+            if (Math.abs(gamepad.axes[3]) > 0.2) {
+                moveDirection.z = gamepad.axes[3]; // İleri/geri hareket
             }
 
-            // BÖLÜM 3: GENEL MANTIK (Respawn)
-            if (spaceBoundingBox) {
-                const cameraWorldPos = new THREE.Vector3();
-                camera.getWorldPosition(cameraWorldPos);
-                
-                if (!spaceBoundingBox.containsPoint(cameraWorldPos)) {
-                    velocity.set(0, 0, 0);
-                    if (vrControlsActive && renderer.xr.isPresenting) {
-                        playerRig.position.set(15, 1.6, 0); // VR respawn
-                    } else if (!vrControlsActive && controls) {
-                        controls.getObject().position.set(15, 1.8, 0); // Desktop respawn
-                    }
-                }
-            }
-            
-            // Model animasyonlarını güncelle
-            models.forEach(entry => {
-                if (entry && entry.mixer && entry.animated) {
-                    entry.mixer.update(delta);
-                }
-            });
-            
-            // Render
-            // DEĞİŞTİ: VR ve Desktop için render mantığı
-            if (renderer.xr.isPresenting === true) {
-                // VR'DA: Siyah ekranı önlemek için post-processing'i (composer) atla
-                // ve standart render'ı kullan.
-                renderer.render(scene, camera);
-            } else {
-                // DESKTOP'TA: Bloom efekti için composer'ı kullanmaya devam et.
-                composer.render();
+            // Sol Tetik (index 1) ile koşma (sprint)
+            if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
+                moveSpeed = baseMoveSpeed * 4; // 4 kat hız
             }
         }
+
+        // Sağ kontrolcü (index 1) dönüşü (yaw) yönetir
+        const turnController = vrControllers[1];
+        if (turnController && turnController.gamepad) {
+            const gamepad = turnController.gamepad;
+            // Sağ analog çubuğun X ekseni (axes 2) için smooth turn
+            if (Math.abs(gamepad.axes[2]) > 0.2) {
+                playerRig.rotateY(-gamepad.axes[2] * delta * 2.0); // Dönüş hızı
+            }
+        }
+
+        // Hareketi kameranın baktığı yöne göre hesapla
+        if (moveDirection.length() > 0.01) {
+            const cameraDirection = new THREE.Vector3();
+            camera.getWorldDirection(cameraDirection);
+            cameraDirection.y = 0; // Y eksenini sıfırla
+            cameraDirection.normalize();
+
+            const rightDirection = new THREE.Vector3().crossVectors(camera.up, cameraDirection).normalize().negate();
+
+            const forwardVector = cameraDirection.multiplyScalar(-moveDirection.z * moveSpeed * physicsDelta); // Z ekseni ters çevrilir
+            const rightVector = rightDirection.multiplyScalar(moveDirection.x * moveSpeed * physicsDelta);
+
+            velocity.x += forwardVector.x + rightVector.x;
+            velocity.z += forwardVector.z + rightVector.z;
+        }
+
+        // Hareketi playerRig'e uygula
+        playerRig.position.x += velocity.x * physicsDelta;
+        playerRig.position.z += velocity.z * physicsDelta;
+        playerRig.position.y += velocity.y * physicsDelta;
+
+        // Zemin kontrolü
+        if (playerRig.position.y < 1.6) {
+            velocity.y = 0;
+            playerRig.position.y = 1.6;
+            onFloor = true;
+        } else {
+            onFloor = false;
+        }
+    }
+    // BÖLÜM 2: DESKTOP HAREKET MANTIĞI (değişmedi)
+    else if (!vrControlsActive && controls && controls.isLocked) {
+        velocity.x -= velocity.x * 10.0 * physicsDelta;
+        velocity.z -= velocity.z * 10.0 * physicsDelta;
+        velocity.y -= gravity * physicsDelta;
+
+        direction.z = Number(keys.forward) - Number(keys.backward);
+        direction.x = Number(keys.right) - Number(keys.left);
+        direction.normalize();
+
+        if (keys.forward || keys.backward) velocity.z -= direction.z * currentMoveSpeed * physicsDelta;
+        if (keys.left || keys.right) velocity.x -= direction.x * currentMoveSpeed * physicsDelta;
+
+        if (keys.jump && onFloor) {
+            velocity.y = jumpVelocity;
+            onFloor = false;
+        }
+
+        controls.moveRight(-velocity.x * physicsDelta);
+        controls.moveForward(-velocity.z * physicsDelta);
+        controls.getObject().position.y += (velocity.y * physicsDelta);
+
+        if (controls.getObject().position.y < 1.6) {
+            velocity.y = 0;
+            controls.getObject().position.y = 1.6;
+            onFloor = true;
+        }
+    }
+
+    // BÖLÜM 3: GENEL MANTIK (Respawn)
+    if (spaceBoundingBox) {
+        const cameraWorldPos = new THREE.Vector3();
+        camera.getWorldPosition(cameraWorldPos);
+
+        if (!spaceBoundingBox.containsPoint(cameraWorldPos)) {
+            velocity.set(0, 0, 0);
+            if (vrControlsActive && renderer.xr.isPresenting) {
+                playerRig.position.set(15, 1.6, 0);
+            } else if (!vrControlsActive && controls) {
+                controls.getObject().position.set(15, 1.8, 0);
+            }
+        }
+    }
+
+    // Model animasyonlarını güncelle
+    models.forEach(entry => {
+        if (entry && entry.mixer && entry.animated) {
+            entry.mixer.update(delta);
+        }
+    });
+
+    // Render
+    if (renderer.xr.isPresenting) {
+        renderer.render(scene, camera);
+    } else {
+        composer.render();
+    }
+}
         
         
         // DEĞİŞTİ: animate() yerine setAnimationLoop kullan
