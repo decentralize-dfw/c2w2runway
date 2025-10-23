@@ -548,6 +548,21 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             // VR oturumu başladığında sekansı tetikle
             renderer.xr.addEventListener('sessionstart', () => {
                 console.log('VR Session Started');
+
+                // DÜZELTME: SESİ AÇMAK İÇİN "BOŞ" SES BAŞLAT
+                // Kullanıcı etkileşimi (tıklama) o anda gerçekleştiği için,
+                // audioListener'ı "uyandırmak" için boş bir buffer çalmamız gerekiyor.
+                try {
+                    const emptySound = audioListener.context.createBufferSource();
+                    emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050); // 1 sample'lık boş buffer
+                    emptySound.connect(audioListener.context.destination);
+                    emptySound.start();
+                    console.log('Audio Context başlatıldı.');
+                } catch (e) {
+                    console.error('Audio Context başlatılamadı:', e);
+                }
+                // SES DÜZELTMESİ BİTTİ
+
                 stopIntroSound();
                 document.getElementById('startButton').style.display = 'none';
                 backgroundImg.style.display = 'none';
@@ -556,13 +571,6 @@ All these transformations, these ideas, are not presented as neat “10 new conc
                 document.getElementById('initiating').style.display = 'block';
                 runSequence(); // Sekansı hemen başlat
             });
-            
-            renderer.xr.addEventListener('sessionend', () => {
-                console.log('VR Session Ended');
-                // Gerekirse yeniden başlatma veya menüye dönme mantığı eklenebilir
-                window.location.reload(); 
-            });
-        }
 
         // EKLENDİ: Ortamı (Desktop veya VR) kuran ana fonksiyon
         async function setupEnvironment() {
@@ -1536,42 +1544,72 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             const physicsDelta = (time - prevTime) / 1000;
             prevTime = time;
             
-            // BÖLÜM 1: VR HAREKET MANTIĞI
+            // BÖLÜM 1: VR HAREKET MANTIĞI (GÜNCELLENDİ)
             if (vrControlsActive && renderer.xr.isPresenting) {
+                
+                // Hız sönümlemesi
                 velocity.x -= velocity.x * 10.0 * physicsDelta;
                 velocity.z -= velocity.z * 10.0 * physicsDelta;
+                // Yerçekimi
                 velocity.y -= gravity * physicsDelta;
 
-                let moveDirection = new THREE.Vector3();
-                let isSprinting = false;
+                let moveSpeed = baseMoveSpeed; // Normal hız
+                let moveDirection = new THREE.Vector3(0, 0, 0);
 
-                // Sol controller (index 0) hareketi kontrol eder
+                // Sol kontrolcü (index 0) hareketi yönetir
                 const moveController = vrControllers[0]; 
                 if (moveController && moveController.gamepad) {
-                    const axes = moveController.gamepad.axes;
-                    // axes[2] = sol/sağ, axes[3] = ileri/geri
-                    if (Math.abs(axes[3]) > 0.1) moveDirection.z = axes[3];
-                    if (Math.abs(axes[2]) > 0.1) moveDirection.x = axes[2];
-                    
-                    // Sol tetik (button 1) ile sprint
-                    if(moveController.gamepad.buttons[1] && moveController.gamepad.buttons[1].pressed) {
-                        isSprinting = true;
+                    const gamepad = moveController.gamepad;
+                    // Analog çubuk (axes 2 ve 3)
+                    if (Math.abs(gamepad.axes[2]) > 0.1) {
+                        moveDirection.x = gamepad.axes[2];
+                    }
+                    if (Math.abs(gamepad.axes[3]) > 0.1) {
+                        moveDirection.z = gamepad.axes[3];
+                    }
+
+                    // Sol Tetik (index 1) veya Sıkma (index 0) ile Koşma (Sprint)
+                    // Quest 3'te genellikle "tetik" (trigger) index 1'dir.
+                    if ((gamepad.buttons[1] && gamepad.buttons[1].pressed) || (gamepad.buttons[0] && gamepad.buttons[0].pressed)) {
+                        moveSpeed = baseMoveSpeed * 4; // 4 kat hız
                     }
                 }
-                
-                const speed = isSprinting ? baseMoveSpeed * 4 : baseMoveSpeed;
 
-                const cameraDirection = new THREE.Vector3();
-                camera.getWorldDirection(cameraDirection);
-                cameraDirection.y = 0;
-                cameraDirection.normalize();
-                
-                const rightDirection = new THREE.Vector3().crossVectors(camera.up, cameraDirection).negate();
+                // Sağ kontrolcü (index 1) bakış yönünü (dönüş) yönetir
+                const turnController = vrControllers[1];
+                if (turnController && turnController.gamepad) {
+                    const gamepad = turnController.gamepad;
+                    // Sağ analog çubuğun X ekseni (axes 2)
+                    // Bu, "snap turn" (hızlı dönüş) veya "smooth turn" (akıcı dönüş) yapar.
+                    // Şimdilik akıcı dönüş yapalım.
+                    if (Math.abs(gamepad.axes[2]) > 0.2) {
+                        // Kamera rig'ini Y ekseninde döndür
+                        // Negatif değer ekliyoruz çünkü sağa itme (pozitif X) sağa dönme (negatif rotasyon) demektir.
+                        playerRig.rotateY(-gamepad.axes[2] * delta * 2.0); // Dönüş hızını ayarlayabilirsiniz
+                    }
+                }
 
-                if (moveDirection.z) velocity.add(cameraDirection.multiplyScalar(-moveDirection.z * speed * physicsDelta));
-                if (moveDirection.x) velocity.add(rightDirection.multiplyScalar(moveDirection.x * speed * physicsDelta));
+                // Hareketi kameranın baktığı yöne göre hesapla
+                if (moveDirection.length() > 0.01) {
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection); // Kameranın baktığı yönü al
+                    cameraDirection.y = 0; // Y eksenini sıfırla (havada uçmayalım)
+                    cameraDirection.normalize();
 
-                // Hareketi playerRig'e uygula
+                    // Sağa/sola hareket için dik (çapraz) vektörü bul
+                    const rightDirection = new THREE.Vector3().crossVectors(camera.up, cameraDirection).normalize().negate();
+
+                    // İleri/geri hareketi kameranın baktığı yöne göre ayarla
+                    const forwardVector = cameraDirection.multiplyScalar(moveDirection.z * moveSpeed * physicsDelta);
+                    // Sağa/sola hareketi kameranın sağına göre ayarla
+                    const rightVector = rightDirection.multiplyScalar(moveDirection.x * moveSpeed * physicsDelta);
+
+                    // İki yönü toplayarak hıza ekle
+                    velocity.x += forwardVector.x + rightVector.x;
+                    velocity.z += forwardVector.z + rightVector.z;
+                }
+
+                // Hareketi playerRig'e uygula (böylece kamera da hareket eder)
                 playerRig.position.x += velocity.x * physicsDelta;
                 playerRig.position.z += velocity.z * physicsDelta;
                 playerRig.position.y += velocity.y * physicsDelta;
@@ -1584,7 +1622,8 @@ All these transformations, these ideas, are not presented as neat “10 new conc
                 } else {
                     onFloor = false;
                 }
-            } 
+
+            }
             // BÖLÜM 2: DESKTOP HAREKET MANTIĞI
             else if (!vrControlsActive && controls && controls.isLocked) {
                 velocity.x -= velocity.x * 10.0 * physicsDelta;
