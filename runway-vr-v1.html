@@ -552,11 +552,9 @@ All these transformations, these ideas, are not presented as neat “10 new conc
                 document.getElementById('startButton').style.display = 'none';
                 backgroundImg.style.display = 'none';
                 
-                // 5 saniye sonra sekansı başlat
-                setTimeout(() => {
-                    document.getElementById('initiating').style.display = 'block';
-                    runSequence(); // Sekansı başlat
-                }, 5000); 
+                // Gecikmeyi kaldır, tıklandığı anda başlat
+                document.getElementById('initiating').style.display = 'block';
+                runSequence(); // Sekansı hemen başlat
             });
             
             renderer.xr.addEventListener('sessionend', () => {
