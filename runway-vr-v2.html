@@ -438,564 +438,6 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         import { VRButton } from 'three/addons/webxr/VRButton.js';
         import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
         
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.3;
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.physicallyCorrectLights = true;
-
-        // EKLENDİ: VR'ı etkinleştir
-        renderer.xr.enabled = true;
-
-        document.body.appendChild(renderer.domElement);
-
-        // EKLENDİ: VR için oyuncu "rig"i (kamera ve kontrolleri taşıyacak)
-        const playerRig = new THREE.Group();
-        playerRig.position.set(15, 1.6, 0); // Başlangıç pozisyonu (zemin seviyesi)
-        scene.add(playerRig);
-        playerRig.add(camera); // Kamerayı rig'e ekle
-
-        // Post-processing for bloom
-        const composer = new EffectComposer(renderer);
-        const renderPass = new RenderPass(scene, camera);
-        composer.addPass(renderPass);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.1, 0.4, 0.85); // Low general bloom: strength 0.1
-        composer.addPass(bloomPass);
-        
-        // Audio Listener
-        const audioListener = new THREE.AudioListener();
-        camera.add(audioListener);
-        
-        // DEĞİŞTİ: Kontrol değişkenleri
-        let controls; // Desktop controls
-        let vrControlsActive = false;
-        let vrControllers = [];
-        // EKLENDİ: VR'da dönüş için yardımcı değişken
-        let lastTurnTime = 0; 
-        
-        const backgroundImg = document.getElementById('backgroundImg');
-        const loadingText = document.getElementById('loading-text'); // Yükleme metni
-        let bootShown = false;
-
-        // EKLENDİ: Desktop kontrollerini kuran fonksiyon
-        function setupDesktopControls() {
-            controls = new PointerLockControls(camera, document.body);
-            
-            // DEĞİŞTİ: Kamerayı değil, controls.getObject()'i sahneye ekle (PointerLock için)
-            // Rig'i kullanmıyoruz, çünkü PointerLockControls kamerayı doğrudan yönetir.
-            // Başlangıç pozisyonunu doğrudan kameraya ayarlayacağız.
-            scene.remove(playerRig); // VR rig'ini kaldır
-            scene.add(controls.getObject());
-            
-            // Orijinal başlangıç pozisyonunu controls.getObject() üzerine ayarla
-            controls.getObject().position.set(15, 1.8, 0);
-            
-            const blocker = document.getElementById('instructions');
-            const resume = document.getElementById('resume');
-
-            blocker.addEventListener('click', (event) => {
-                event.stopPropagation();
-                controls.lock();
-            });
-            controls.addEventListener('lock', () => {
-                blocker.style.display = 'none';
-                resume.style.display = 'none';
-                backgroundImg.style.display = 'none';
-                document.getElementById('startButton').style.display = 'block';
-            });
-            controls.addEventListener('unlock', () => {
-                // resume.style.display = 'none'; // Kilit açıldığında resume gösterme (ESC)
-                // Kilit açıldığında resume ekranını göstermek daha iyi olabilir
-                if(bootShown) { // Sadece oyun başladıysa
-                   resume.style.display = 'block';
-                   backgroundImg.style.display = 'block'; // Arka planı da göster
-                }
-            });
-
-            // Resume tıklandığında
-            resume.addEventListener('click', (event) => {
-                event.stopPropagation();
-                controls.lock();
-            });
-
-            document.addEventListener('click', () => {
-                if (!controls.isLocked && bootShown && resume.style.display === 'none') {
-                    controls.lock().catch((error) => {
-                        console.error('Pointer Lock hatası:', error);
-                    });
-                }
-            });
-
-            // Model yüklendikten sonra göster
-            if (bootShown && !controls.isLocked) {
-                blocker.style.display = 'block';
-            }
-        }
-
-        
-        // EKLENDİ: VR kontrollerini kuran fonksiyon
-        function setupVRControls() {
-            vrControlsActive = true;
-            // VR'da gereksiz UI elementlerini gizle
-            document.getElementById('fullscreenButton').style.display = 'none';
-            document.getElementById('projectInfoButton').style.display = 'none';
-            document.getElementById('studioInfoButton').style.display = 'none';
-            document.getElementById('hintButton').style.display = 'none';
-            document.getElementById('creatorsNoteButton').style.display = 'none';
-            document.getElementById('instructions').style.display = 'none';
-            document.getElementById('resume').style.display = 'none';
-
-
-            const vrButton = VRButton.createButton(renderer);
-            vrButton.textContent = 'Touch to Start'; // Buton metni
-            vrButton.id = 'VRButton'; // CSS stilini alması için ID
-            document.body.appendChild(vrButton);
-
-            // VR Controller'ları ayarla
-            const controllerModelFactory = new XRControllerModelFactory();
-            
-            // Kontrolcü 0 (Genellikle Sol)
-            const controller1 = renderer.xr.getController(0);
-            const controllerGrip1 = renderer.xr.getControllerGrip(0);
-            controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-            playerRig.add(controller1); // Rig'e ekle
-            playerRig.add(controllerGrip1); // Rig'e ekle
-            vrControllers.push(controller1);
-
-            // Kontrolcü 1 (Genellikle Sağ)
-            const controller2 = renderer.xr.getController(1);
-            const controllerGrip2 = renderer.xr.getControllerGrip(1);
-            controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-            playerRig.add(controller2); // Rig'e ekle
-            playerRig.add(controllerGrip2); // Rig'e ekle
-            vrControllers.push(controller2);
-
-            // VR oturumu başladığında
-            renderer.xr.addEventListener('sessionstart', () => {
-                console.log('VR Session Started');
-
-                // AudioContext'i başlat (iOS/bazı tarayıcılar için kritik)
-                if (audioListener.context.state === 'suspended') {
-                    audioListener.context.resume().then(() => {
-                        console.log('AudioContext resumed for VR');
-                        // Güvenilirlik için boş bir ses çal
-                        const emptySound = audioListener.context.createBufferSource();
-                        emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
-                        emptySound.connect(audioListener.context.destination);
-                        emptySound.start();
-                    }).catch(e => console.error('AudioContext resume failed:', e));
-                }
-
-                stopIntroSound();
-                document.getElementById('startButton').style.display = 'none';
-                backgroundImg.style.display = 'none';
-                document.getElementById('initiating').style.display = 'block';
-                runSequence(); // Sekansı otomatik başlat
-            });
-
-            renderer.xr.addEventListener('sessionend', () => {
-                console.log('VR Session Ended');
-                // En temiz yol sayfayı yenilemektir
-                window.location.reload();
-            });
-        }
-
-
-        // EKLENDİ: Ortamı (Desktop veya VR) kuran ana fonksiyon
-        async function setupEnvironment() {
-            try {
-                // 'immersive-vr' desteğini kontrol et
-                const vrSupported = navigator.xr && await navigator.xr.isSessionSupported('immersive-vr');
-                if (vrSupported) {
-                    console.log('VR Destekleniyor, VR kontrolleri kuruluyor.');
-                    setupVRControls();
-                } else {
-                    console.log('VR Desteklenmiyor, Desktop kontrolleri kuruluyor.');
-                    setupDesktopControls();
-                }
-            } catch (e) {
-                console.error('VR desteği kontrol edilirken hata oluştu:', e);
-                setupDesktopControls(); // Hata olursa desktop'a dön
-            }
-        }
-
-        // Hareket değişkenleri
-        let baseMoveSpeed = 20;
-        let currentMoveSpeed = baseMoveSpeed;
-        const jumpVelocity = 5;
-        let velocity = new THREE.Vector3();
-        let direction = new THREE.Vector3(); // Bu, desktop için kullanılacak
-        let prevTime = performance.now();
-        const gravity = 9.8;
-        let onFloor = true;
-        const keys = {
-            forward: false,
-            backward: false,
-            left: false,
-            right: false,
-            jump: false,
-            sprint: false
-        };
-
-        // DEĞİŞTİ: Key listener'lar sadece desktop'ta (VR değilken) çalışmalı
-        document.addEventListener('keydown', (event) => {
-            if (vrControlsActive) return; // VR'da iken klavyeyi yoksay
-            switch (event.code) {
-                case 'KeyW': keys.forward = true; break;
-                case 'KeyS': keys.backward = true; break;
-                case 'KeyA': keys.left = true; break;
-                case 'KeyD': keys.right = true; break;
-                case 'Space': if (onFloor) { keys.jump = true; } break;
-                case 'ShiftLeft': keys.sprint = true; currentMoveSpeed = baseMoveSpeed * 4; break;
-            }
-        });
-        document.addEventListener('keyup', (event) => {
-            if (vrControlsActive) return;
-            switch (event.code) {
-                case 'KeyW': keys.forward = false; break;
-                case 'KeyS': keys.backward = false; break;
-                case 'KeyA': keys.left = false; break;
-                case 'KeyD': keys.right = false; break;
-                case 'Space': keys.jump = false; break;
-                case 'ShiftLeft': keys.sprint = false; currentMoveSpeed = baseMoveSpeed; break;
-            }
-        });
-
-        // Gerçekçi ortam haritası (HDR)
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
-        pmremGenerator.compileEquirectangularShader();
-        new RGBELoader().load('https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/DARK-NEBULA.hdr', (texture) => {
-            const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-            scene.environment = envMap;
-            scene.background = envMap;
-            texture.dispose();
-            pmremGenerator.dispose();
-        });
-        
-        // Işıklar (değişmedi)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
-        directionalLight.position.set(5, 10, 5);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 4096;
-        directionalLight.shadow.mapSize.height = 4096;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 500;
-        scene.add(directionalLight);
-        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.1);
-        hemisphereLight.position.set(0, 20, 0);
-        scene.add(hemisphereLight);
-        const dramaticLight = new THREE.DirectionalLight(0xffffff, 100);
-        dramaticLight.position.set(0, 30, 0);
-        dramaticLight.castShadow = true;
-        dramaticLight.shadow.mapSize.width = 4096;
-        dramaticLight.shadow.mapSize.height = 4096;
-        dramaticLight.shadow.camera.near = 0.5;
-        dramaticLight.shadow.camera.far = 100;
-        dramaticLight.shadow.camera.left = -50;
-        dramaticLight.shadow.camera.right = 50;
-        dramaticLight.shadow.camera.top = 50;
-        dramaticLight.shadow.camera.bottom = -50;
-        dramaticLight.shadow.bias = -0.0001;
-        dramaticLight.shadow.normalBias = 0.05;
-        dramaticLight.shadow.radius = 4;
-        dramaticLight.shadow.blurSamples = 16;
-        scene.add(dramaticLight);
-        
-        // GLTF Loader
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
-        dracoLoader.setDecoderConfig({ type: 'js' });
-        const gltfLoader = new GLTFLoader();
-        gltfLoader.setDRACOLoader(dracoLoader);
-        gltfLoader.setMeshoptDecoder(MeshoptDecoder);
-        
-        // Ana mekan GLB'sini yükle
-        const spaceUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/space-opt.glb';
-        let spaceBoundingBox = null;
-        document.getElementById('loading').style.display = 'flex'; // 'flex' olarak değiştirildi
-        gltfLoader.load(
-            spaceUrl,
-            (gltf) => {
-                const spaceModel = gltf.scene;
-                spaceModel.position.set(0, 0, 0);
-                spaceModel.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                    }
-                });
-                scene.add(spaceModel);
-                spaceBoundingBox = new THREE.Box3().setFromObject(spaceModel);
-                console.log('Mekan yüklendi!');
-                document.getElementById('loading').style.display = 'none';
-                backgroundImg.style.display = 'block';
-                
-                // DEĞİŞTİ: Kontrol kurulumunu burada başlat
-                bootShown = true;
-                setupEnvironment(); 
-            },
-            (xhr) => {
-                // Yükleme metnini güncelle
-                loadingText.textContent = `Loading: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`;
-            },
-            (error) => {
-                console.error('Mekan yükleme hatası:', error);
-                loadingText.textContent = 'Error: Failed to load space!';
-            }
-        );
-
-        // Model URL'leri (değişmedi)
-        const modelUrls = [
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/bellicapelli-1000-opt-v9.glb', // Model 1
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/matisse-1000-coms-opt-v4.glb', // Model 2
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/frued-human-1000-coms-opt-v16.glb', // Model 3
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baconscene-1000-coms-opt-v5.glb', // Model 4
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mutantbacon-1000-coms-opt-v27.glb', // Model 5
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/squallo-1000-opt-v37.glb', // Model 6
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/curator-10000-threejs-opt-v3.glb', // Model 7
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/joker-1000-opt-v19.glb', // Model 8
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/bulkgelin-1000-opt-v10.glb', // Model 9
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mare-1000-opt-v21.glb', // Model 10
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancedress-1000-opt-v23.glb', // Model 11
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/whitewearsdfw-1000-opt-v40.glb', // Model 12
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/invertmemelegancesuit-1000-opt-v18.glb', // Model 13
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/pile-1000-optopotooo-opt-v1.glb', // Model 14
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/redpunnnk-1000-opt-v1.glb', // Model 15
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancesuit-xoku-1000-opt-v25.glb', // Model 16
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/saturnweekend-900-v2-threejs-opt-v5.glb', // Model 17
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/6529memes-1000-opt-v1.glb', // Model 18
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/artdecc0-1000-opt-v3.glb', // Model 19
-            'httpss://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/xcopy-1000--v2coms-opt-v6.glb', // Model 20
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/ailu-v2-1000-opt-v1.glb', // Model 21
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/gordon-1000-comms-opt-v17.glb', // Model 22
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/davicni-1000-opt-v13.glb', // Model 23
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/cozom-1000-c2-comms-opt-v2.glb', // Model 24
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/beeple-1000comms-opt-v8.glb', // Model 25
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/samspratt-1000-comms-opt-v34.glb', // Model 26
-            'https.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/asiah-900-4SECS-threejs-opt-v3.glb', // Model 27
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baiencaigai-tigai-1000-opt-v6.glb', // Model 28
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/teddy-1000-opt-v39.glb', // Model 29
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/asian-1000-opt-v4.glb', // Model 30
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mafiaclown-1000-opt-v20.glb', // Model 31
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/samu-1000-opt-v35.glb', // Model 32
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baienciagai-1000-opt-v7.glb', // Model 33
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/rabbit-1000-opt-v32.glb', // Model 34
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/neo-1000-opt-v28.glb', // Model 35
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/psyclown-1000-opt-v31.glb', // Model 36
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/xeu2-900--v2-threejs-opt-v7.glb', // Model 37
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/papaz-1000-threejs-opt-v29.glb', // Model 38
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/sleekrobobitchspikey-1000-opt-v36.glb', // Model 39
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/donmac-1000-opt-v15.glb', // Model 40
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/redwearsdfw-1000-opt-v33.glb', // Model 41
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/cybergesu-1000-opt-v12.glb', // Model 42
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/steve-1000com-opt-v38.glb', // Model 43
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/millefeuille-dobby-1000coms-opt-v26.glb', // Model 44
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/junya-1000-opt-v42.glb', // Model 45
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/electrogod-1000-threejs-opt-v43.glb', // Model 46
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/davicni-1000-threejs-opt-v14.glb', // Model 47
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancesuit-1000-fup-opt-v24.glb', // Model 48
-            'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/finale.glb' // Model 49
-        ];
-        // Model açıklamaları (değişmedi)
-        const modelDescriptions = [
-            'Model 1: Bellicapelli, a stylish and elegant design.', // Model 1
-            'Model 2: Matisse Purple, vibrant and artistic.', // Model 2
-            'Model 3: Bacon-Freud, inspired by surrealist art.', // Model 3
-            'Model 4: Bacon Scene, a dynamic visual composition.', // Model 4
-            'Model 5: Mutant Bacon, a bold and unconventional piece.', // Model 5
-            'Model 6: Squallo, sleek and modern aesthetic.', // Model 6
-            'Model 7: Curator, a refined and sophisticated model.', // Model 7
-            'Model 8: Joker, chaotic and expressive design.', // Model 8
-            'Model 9: Bulkgelin, intricate and detailed.', // Model 9
-            'Model 10: Mare, serene and flowing visuals.', // Model 10
-            'Model 11: Memelegance Dress, chic and trendy.', // Model 11
-            'Model 12: White Wears DFW, minimalist elegance.', // Model 12
-            'Model 13: Invert Memelegance Suit, a bold twist.', // Model 13
-            'Model 14: Pile, textured and layered design.', // Model 14
-            'Model 15: Red Punk, vibrant and rebellious.', // Model 15
-            'Model 16: Memelegance Suit, sharp and stylish.', // Model 16
-            'Model 17: Saturn Weekend, cosmic and futuristic.', // Model 17
-            'Model 18: 6529 Memes, playful and animated.', // Model 18
-            'Model 19: Art Deco, classic and ornate.', // Model 19
-            'Model 20: XCopy, bold digital art vibes.', // Model 20
-            'Model 21: C2W2 Rich Ailu Scene, luxurious and detailed.', // Model 21
-            'Model 22: Gooner, edgy and modern.', // Model 22
-            'Model 23: Davicni, inspired by classical art.', // Model 23
-            'Model 24: Cozom, vibrant and colorful.', // Model 24
-            'Model 25: Beeple, futuristic and digital.', // Model 25
-            'Model 26: Samsprat, whimsical and creative.', // Model 26
-            'Model 27: Asiah, culturally rich design.', // Model 27
-            'Model 28: Chrome Tiger, sleek and powerful.', // Model 28
-            'Model 29: Teddyminator, playful yet bold.', // Model 29
-            'Model 30: Asian, elegant and traditional.', // Model 30
-            'Model 31: Mafia Clown, quirky and intense.', // Model 31
-            'Model 32: Samu, inspired by samurai aesthetics.', // Model 32
-            'Model 33: Baiencaigai, vibrant and eclectic.', // Model 33
-            'Model 34: C-Rabbit, cute yet dynamic.', // Model 34
-            'Model 35: Neo, futuristic and sleek.', // Model 35
-            'Model 36: Psy Clown, psychedelic and bold.', // Model 36
-            'Model 37: Xeu2, experimental and modern.', // Model 37
-            'Model 38: Papaz, ornate and ceremonial.', // Model 38
-            'Model 39: Sleek Robo Bitch Spikey, cyberpunk edge.', // Model 39
-            'Model 40: Donmac, classic and refined.', // Model 40
-            'Model 41: Red Wears DFW, bold and striking.', // Model 41
-            'Model 42: Cybergesu, futuristic and spiritual.', // Model 42
-            'Model 43: Steve, modern and minimal.', // Model 43
-            'Model 44: Millefeuille Dobby, layered and intricate.', // Model 44
-            'Model 45: Junya, avant-garde fashion.', // Model 45
-            'Model 46: Electrogod, electrifying and bold.', // Model 46
-            'Model 47: Davicni, artistic and classical.', // Model 47
-            'Model 48: Curator, elegant and curated.', // Model 48
-            'Model 49: Memelegance Suit FUP, stylish and modern.' // Model 49
-        ];
-        const models = [];
-        
-        // Raycaster for clicking and hovering
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let clickableObject = null;
-        
-        function onMouseMove(event) {
-            // DEĞİŞTİ: VR'da mouse move yok, sadece desktop'ta
-            if (controls && controls.isLocked) {
-                // Mouse koordinatlarını ekranın ortasına göre ayarla (PointerLock için)
-                mouse.x = 0;
-                mouse.y = 0;
-                
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(scene.children, true);
-                const hoverText = document.getElementById('hoverText');
-                if (intersects.length > 0 && (intersects[0].object.name === 'balls' || intersects[0].object.name === 'Body')) {
-                    hoverText.style.display = 'block';
-                    document.body.style.cursor = 'pointer';
-                } else {
-                    hoverText.style.display = 'none';
-                    document.body.style.cursor = 'auto';
-                }
-            }
-        }
-        
-        function onMouseClick(event) {
-            // DEĞİŞTİ: VR'da mouse click yok
-            if (vrControlsActive || !controls.isLocked) return; 
-            
-            // Mouse'u ekranın ortası olarak ayarla
-            mouse.x = 0;
-            mouse.y = 0;
-            raycaster.setFromCamera(mouse, camera);
-            
-            const intersects = raycaster.intersectObjects(scene.children, true);
-            for (let i = 0; i < intersects.length; i++) {
-                if (intersects[i].object.name === 'balls' || intersects[i].object.name === 'Body') {
-                    window.open('https://www.digitalforgerywork.shop/c2w2', '_blank');
-                    break;
-                }
-            }
-        }
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('click', onMouseClick);
-        
-        // Model yükleme ve animasyon fonksiyonları (değişmedi)
-        function loadModel(index) {
-            return new Promise((resolve, reject) => {
-                gltfLoader.load(
-                    modelUrls[index - 1],
-                    (gltf) => {
-                        const modelScene = gltf.scene;
-                        modelScene.position.set(0, 0, 0);
-                        modelScene.traverse((child) => {
-                            if (child.isMesh) {
-                                child.castShadow = true;
-                                child.receiveShadow = true;
-                                if (index === 49 && child.name === 'balls' && child.material.name === 'TT') {
-                                    child.material.emissiveIntensity = 100; 
-                                    clickableObject = child;
-                                } else {
-                                    if (child.material.emissive) {
-                                        child.material.emissiveIntensity = 1; 
-                                    }
-                                }
-                            }
-                        });
-                        scene.add(modelScene);
-                        let mixer = null;
-                        if (gltf.animations && gltf.animations.length > 0) {
-                            mixer = new THREE.AnimationMixer(modelScene);
-                            gltf.animations.forEach((clip) => {
-                                const action = mixer.clipAction(clip);
-                                action.loop = THREE.LoopRepeat;
-                            });
-                        }
-                        models[index] = { model: modelScene, mixer, animated: false };
-                        console.log(`Model ${index} yüklendi (animasyonsuz)`);
-                        resolve();
-                    },
-                    undefined,
-                    (error) => {
-                        console.error(`Model ${index} yükleme hatası:`, error);
-                        // Hata durumunda bile devam et
-                        models[index] = null; // Hatalı modeli null olarak işaretle
-                        resolve(); // Sekansın durmaması için reject yerine resolve kullan
-                    }
-                );
-            });
-        }
-        function animateModel(index) {
-            const entry = models[index];
-            if (entry && entry.mixer && entry.mixer._actions.length > 0) {
-                entry.mixer.stopAllAction();
-                entry.animated = true;
-                entry.mixer.time = 0;
-                entry.mixer.update(0);
-                entry.mixer._actions.forEach(action => {
-                    action.reset();
-                    action.play();
-                });
-                console.log(`Model ${index} animasyonu tetiklendi (loop'ta)`);
-                document.getElementById('description').textContent = modelDescriptions[index - 1];
-                document.getElementById('description').style.display = 'block';
-            } else if (entry) { // Model yüklendi ama animasyon yoksa
-                console.log(`Model ${index} için animasyon yok veya mixer hazır değil`);
-                document.getElementById('description').textContent = modelDescriptions[index - 1];
-                document.getElementById('description').style.display = 'block';
-            }
-        }
-        function deleteModel(index) {
-            const entry = models[index];
-            if (entry) {
-                if (entry.mixer) entry.mixer.stopAllAction();
-                scene.remove(entry.model);
-                entry.model.traverse((child) => {
-                    if (child.isMesh) {
-                        if(child.geometry) child.geometry.dispose();
-                        if(child.material) {
-                            if (Array.isArray(child.material)) {
-                                child.material.forEach(mat => mat.dispose());
-                            } else {
-                                child.material.dispose();
-                            }
-                        }
-                    }
-                });
-                models[index] = null;
-                console.log(`Model ${index} silindi`);
-                document.getElementById('description').style.display = 'none';
-                if (index === 49) {
-                    clickableObject = null;
-                }
-            }
-        }
-        function wait(seconds) {
-            return new Promise(resolve => setTimeout(resolve, seconds * 1000));
-        }
-
         // Ses fonksiyonları (değişmedi)
         const audioLoader = new THREE.AudioLoader();
         let sound1Buffer, sound2Buffer, sound3Buffer, sound4Buffer, sound5Buffer, sound6Buffer, introSoundBuffer;
@@ -1020,6 +462,10 @@ const introSoundUrl = 'https://raw.githubusercontent.com/decentralize-dfw/vea_00
         });
         function playIntroSound() {
     if (introSoundBuffer) {
+        // Ensure only one intro sound plays
+        if (introSound && introSound.isPlaying) {
+            introSound.stop();
+        }
         if (audioListener.context.state === 'suspended') {
             audioListener.context.resume().then(() => {
                 introSound = new THREE.Audio(audioListener);
@@ -1042,9 +488,12 @@ const introSoundUrl = 'https://raw.githubusercontent.com/decentralize-dfw/vea_00
     }
 }
         function stopIntroSound() {
-            if (introSound && introSound.isPlaying) { 
-                introSound.stop(); 
-                console.log('Intro sound stop edildi'); 
+            // DEĞİŞTİ: `isPlaying` kontrolü kaldırıldı, varsa durdur.
+            if (introSound) {
+                introSound.stop();
+                console.log('Intro sound stop edildi');
+            } else {
+                console.log('Intro sound bulunamadı veya henüz çalmadı.');
             }
         }
         function playSound1() {
@@ -1685,15 +1134,17 @@ function playSound6() {
             const delta = clock.getDelta();
             const time = performance.now();
             // physicsDelta'yı delta olarak kullanmak daha tutarlı olabilir
-            const physicsDelta = Math.min(delta, 0.05); // Takılmaları önlemek için delta'yı sınırla
+            // DEĞİŞTİ: Delta sınırını kaldırdım, belki performansı etkiliyordu.
+            const physicsDelta = delta; // Math.min(delta, 0.05); // Takılmaları önlemek için delta'yı sınırla
             prevTime = time;
 
             // BÖLÜM 1: VR HAREKET MANTIĞI
             if (vrControlsActive && renderer.xr.isPresenting) {
-                
-                // Hız sönümlemesi (havada yavaşça durmayı sağlar)
-                velocity.x -= velocity.x * 10.0 * physicsDelta;
-                velocity.z -= velocity.z * 10.0 * physicsDelta;
+
+                // Hız sönümlemesi (havada yavaşça durmayı sağlar) - KALDIRILDI, belki soruna neden oluyordu
+                // velocity.x -= velocity.x * 10.0 * physicsDelta;
+                // velocity.z -= velocity.z * 10.0 * physicsDelta;
+
                 // Yerçekimi
                 velocity.y -= gravity * physicsDelta;
 
@@ -1704,6 +1155,9 @@ function playSound6() {
                 const moveController = vrControllers[0];
                 if (moveController && moveController.gamepad) {
                     const gamepad = moveController.gamepad;
+                    // EKLENDİ: Gamepad eksenlerini logla (hata ayıklama için)
+                    // console.log(`Left Stick: X=${gamepad.axes[2]?.toFixed(2)}, Y=${gamepad.axes[3]?.toFixed(2)}`);
+
                     // Analog çubuk (axes 2: X ekseni, axes 3: Y ekseni/Z hareketi)
                     if (Math.abs(gamepad.axes[2]) > 0.1) { // Ölü bölge (dead zone)
                         vrMoveDirection.x = gamepad.axes[2]; // Sağa/sola (strafe)
@@ -1717,12 +1171,17 @@ function playSound6() {
                     if ((gamepad.buttons[0] && gamepad.buttons[0].pressed) || (gamepad.buttons[1] && gamepad.buttons[1].pressed)) {
                         moveSpeed = baseMoveSpeed * 4; // 4 kat hız
                     }
+                } else {
+                     // console.log("Sol kontrolcü veya gamepad bulunamadı!"); // Hata ayıklama
                 }
 
                 // Sağ kontrolcü (index 1) dönüşü (yaw) yönetir
                 const turnController = vrControllers[1];
                 if (turnController && turnController.gamepad) {
                     const gamepad = turnController.gamepad;
+                    // EKLENDİ: Gamepad eksenlerini logla (hata ayıklama için)
+                    // console.log(`Right Stick: X=${gamepad.axes[2]?.toFixed(2)}, Y=${gamepad.axes[3]?.toFixed(2)}`);
+
                     // Sağ analog çubuğun X ekseni (axes 2)
                     const turnValue = gamepad.axes[2];
                     if (Math.abs(turnValue) > 0.2) {
@@ -1733,32 +1192,42 @@ function playSound6() {
                              lastTurnTime = now;
                         }
                         // Smooth turn (yumuşak dönüş) için:
-                        // playerRig.rotateY(-turnValue * physicsDelta * 2.0); 
+                        // playerRig.rotateY(-turnValue * physicsDelta * 2.0);
                     }
+                } else {
+                     // console.log("Sağ kontrolcü veya gamepad bulunamadı!"); // Hata ayıklama
                 }
 
                 // Hareketi kameranın baktığı yöne göre (head-directed) hesapla
-                if (vrMoveDirection.length() > 0.01) {
+                if (vrMoveDirection.lengthSq() > 0.01) { // lengthSq() daha performanslı
                     camera.getWorldDirection(cameraDirection);
                     cameraDirection.y = 0; // Y eksenini sıfırla (uçmayı engelle)
                     cameraDirection.normalize();
 
-                    rightDirection.copy(cameraDirection).cross(camera.up).normalize();
+                    // DEĞİŞTİ: rightDirection hesaplaması düzeltildi
+                    rightDirection.crossVectors(playerRig.up, cameraDirection).normalize(); // Rig'in up vektörünü kullan
 
                     // gamepad.axes[3] (z) ileri için negatiftir, bu yüzden -vrMoveDirection.z
                     forwardVector.copy(cameraDirection).multiplyScalar(-vrMoveDirection.z * moveSpeed);
                     rightVector.copy(rightDirection).multiplyScalar(vrMoveDirection.x * moveSpeed);
-                    
+
                     // Hızları anlık olarak ayarla (sönümleme yerine)
-                    // Bu, daha tepkisel bir VR hareketi sağlar
+                    // DEĞİŞTİ: physicsDelta çarpımı buraya taşındı, daha temiz.
                     velocity.x = (forwardVector.x + rightVector.x) * physicsDelta;
                     velocity.z = (forwardVector.z + rightVector.z) * physicsDelta;
+
+                } else {
+                     // Hareketsizken x ve z hızını sıfırla (sönümleme kaldırıldığı için gerekli)
+                     velocity.x = 0;
+                     velocity.z = 0;
                 }
 
                 // Hareketi playerRig'e uygula
                 playerRig.position.x += velocity.x;
                 playerRig.position.z += velocity.z;
-                playerRig.position.y += velocity.y;
+                // DEĞİŞTİ: Y pozisyonu hesaplaması hataya açıktı, düzeltildi.
+                playerRig.position.y += velocity.y * physicsDelta; // physicsDelta ile çarpılmalı
+
 
                 // Zemin kontrolü
                 if (playerRig.position.y < 1.6) {
@@ -1851,3 +1320,4 @@ function playSound6() {
     </script>
 </body>
 </html>
+
