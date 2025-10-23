@@ -1637,8 +1637,17 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             });
             
             // Render
-            composer.render();
+            // DEĞİŞTİ: VR ve Desktop için render mantığı
+            if (renderer.xr.isPresenting === true) {
+                // VR'DA: Siyah ekranı önlemek için post-processing'i (composer) atla
+                // ve standart render'ı kullan.
+                renderer.render(scene, camera);
+            } else {
+                // DESKTOP'TA: Bloom efekti için composer'ı kullanmaya devam et.
+                composer.render();
+            }
         }
+        
         
         // DEĞİŞTİ: animate() yerine setAnimationLoop kullan
         renderer.setAnimationLoop(animate);
