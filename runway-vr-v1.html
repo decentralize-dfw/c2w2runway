@@ -509,7 +509,10 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             }
         }
 
-        // EKLENDİ: VR kontrollerini kuran fonksiyon
+        
+
+
+        // EKLENDİ: VR kontrollerini kuran fonksiyon (HATASIZ)
         function setupVRControls() {
             vrControlsActive = true;
             // İstenmeyen UI elementlerini gizle
@@ -550,8 +553,6 @@ All these transformations, these ideas, are not presented as neat “10 new conc
                 console.log('VR Session Started');
 
                 // DÜZELTME: SESİ AÇMAK İÇİN "BOŞ" SES BAŞLAT
-                // Kullanıcı etkileşimi (tıklama) o anda gerçekleştiği için,
-                // audioListener'ı "uyandırmak" için boş bir buffer çalmamız gerekiyor.
                 try {
                     const emptySound = audioListener.context.createBufferSource();
                     emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050); // 1 sample'lık boş buffer
@@ -572,7 +573,16 @@ All these transformations, these ideas, are not presented as neat “10 new conc
                 runSequence(); // Sekansı hemen başlat
             });
 
+            // VR oturumu bittiğinde
+            renderer.xr.addEventListener('sessionend', () => {
+                console.log('VR Session Ended');
+                window.location.reload(); // En temiz yol, sayfayı yenilemek
+            });
+        } // <--- setupVRControls fonksiyonu burada biter
+
+
         // EKLENDİ: Ortamı (Desktop veya VR) kuran ana fonksiyon
+        // ÖNCEKİ HATANIN DÜZELTMESİ: Bu fonksiyon setupVRControls'un DIŞINDA olmalı.
         async function setupEnvironment() {
             try {
                 const vrSupported = navigator.xr && await navigator.xr.isSessionSupported('immersive-vr');
