@@ -463,6 +463,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     let controls; // Desktop controls
     let vrControlsActive = false;
     let vrControllers = [];
+    let experienceRunning = false; // Yeni flag: Experience çalışıyor mu?
     
     const backgroundImg = document.getElementById('backgroundImg');
     let bootShown = false;
@@ -489,11 +490,13 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             blocker.style.display = 'none';
             resume.style.display = 'none';
             backgroundImg.style.display = 'none';
-            document.getElementById('startButton').style.display = 'block';
+            if (!experienceRunning) {
+                document.getElementById('startButton').style.display = 'block';
+            }
         });
         controls.addEventListener('unlock', () => {
-            resume.style.display = 'none'; // Remove resume on unlock (ESC)
-        });
+    resume.style.display = 'none';
+});
         document.addEventListener('click', () => {
             if (!controls.isLocked && bootShown) {
                 controls.lock().catch((error) => {
@@ -519,6 +522,10 @@ document.getElementById('studioInfoButton').style.display = 'none';
 document.getElementById('hintButton').style.display = 'none';
 document.getElementById('creatorsNoteButton').style.display = 'none';
 document.getElementById('instructions').style.display = 'none';
+
+// VR açılış görselini değiştir ve göster (sorun 2 fix)
+backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
+backgroundImg.style.display = 'block';
 
 const vrButton = VRButton.createButton(renderer);
 vrButton.textContent = 'Touch to Start';
@@ -553,7 +560,7 @@ controller2.addEventListener('connected', onConnected);
 // VR oturumu başladığında
 renderer.xr.addEventListener('sessionstart', () => {
     console.log('VR Session Started');
-    document.getElementById('backgroundImg').src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png'; // VR için yeni resim URL'si
+    // VR'da intro sound çalma (sorun 1 zaten handled)
 
     // AudioContext'i başlat
     if (audioListener.context.state === 'suspended') {
@@ -567,7 +574,6 @@ renderer.xr.addEventListener('sessionstart', () => {
         }).catch(e => console.error('AudioContext resume failed:', e));
     }
 
-    stopIntroSound();
     document.getElementById('startButton').style.display = 'none';
     backgroundImg.style.display = 'none';
     document.getElementById('initiating').style.display = 'block';
@@ -641,7 +647,7 @@ renderer.xr.addEventListener('sessionend', () => {
     // Gerçekçi ortam haritası (HDR)
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
-    new RGBELoader().load('https://raw.githubusercontent.com/decentralize-dfw/c2w2/main/DARK-NEBULA.hdr', (texture) => {
+    new RGBELoader().load('https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihzftqscv7cxkdfdwgv4oux5mr7j2n77d2i6nm3juxel5pi6jqr7q', (texture) => { // hdri
         const envMap = pmremGenerator.fromEquirectangular(texture).texture;
         scene.environment = envMap;
         scene.background = envMap;
@@ -688,8 +694,8 @@ renderer.xr.addEventListener('sessionend', () => {
     gltfLoader.setDRACOLoader(dracoLoader);
     gltfLoader.setMeshoptDecoder(MeshoptDecoder);
     
-    // Ana mekan GLB'sini yükle
-    const spaceUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/space-opt.glb';
+    // Ana mekan GLB'sini yükle 
+    const spaceUrl = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafkreiaiqlwqd7st7zpxfti7xnzkqvsfb7ql6aq4i7naz3tucs7ohn3tzu';
     let spaceBoundingBox = null;
     document.getElementById('loading').style.display = 'block';
     gltfLoader.load(
@@ -953,17 +959,22 @@ renderer.xr.addEventListener('sessionend', () => {
         return new Promise(resolve => setTimeout(resolve, seconds * 1000));
     }
 
+
+
+
+
+
     // Ses fonksiyonları (değişmedi)
     const audioLoader = new THREE.AudioLoader();
     let sound1Buffer, sound2Buffer, sound3Buffer, sound4Buffer, sound5Buffer, sound6Buffer, introSoundBuffer;
     let sound1, sound2, sound3, sound4, sound5, sound6, introSound;
-  const soundUrl1 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part1-clean-v3-3-kiddo.mp3';
-const soundUrl2 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part2-clean-v3-3.mp3';
-const soundUrl3 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part3-clean-v3-2.mp3';
-const soundUrl4 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part4-clean-v3-3.mp3';
-const soundUrl5 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part5-clean-v3-3.mp3';
-const soundUrl6 = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/part6-clean-v3-2.mp3';
-const introSoundUrl = 'https://raw.githubusercontent.com/decentralize-dfw/vea_001/main/retailthreejs.mp3';
+  const soundUrl1 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibcgu6lwlg4dnwtn4tnnrneg6cj5zpayeezszpyyjmp3b6vxdo374';
+const soundUrl2 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibfn63kqz3xvtowv2mhjrncc6pxyvw5ejjtnuxka23ylu2fszmcrm';
+const soundUrl3 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigsljivf36zerczg5xjqxgfiicjsfc7og5e2x6o6vk45ebrkm52me';
+const soundUrl4 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigtyyt5i2wyyoa72yghj7tutncahh3bdu5fht27ohscxrg4px5bvm';
+const soundUrl5 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihnvpbu73plc232acthimujvnd2f5jdhmdscgtdgdpgnyxvauoqea';
+const soundUrl6 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiggoxbncl3pk5pqjjbqtwoi7tv57xglketlqjyephutrtptt5mkum';
+const introSoundUrl = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidxveaobsmrrcyg4edy2z3pbfsvrji5ej3yf27oovlse3imkoedva';
     audioLoader.load(soundUrl1, (buffer) => { sound1Buffer = buffer; console.log('Sound 1 buffer yüklendi'); });
     audioLoader.load(soundUrl2, (buffer) => { sound2Buffer = buffer; console.log('Sound 2 buffer yüklendi'); });
     audioLoader.load(soundUrl3, (buffer) => { sound3Buffer = buffer; console.log('Sound 3 buffer yüklendi'); });
@@ -1000,10 +1011,15 @@ if (introSoundBuffer) {
     console.error('Intro sound buffer not ready');
 }
 }
-    function stopIntroSound() {
+    function fadeOutIntroSound() {
         if (introSound && introSound.isPlaying) { 
-            introSound.stop(); 
-            console.log('Intro sound stop edildi'); 
+            // 4 saniyede fade out (echo için reverb eklenmedi, basit fade)
+            const currentTime = audioListener.context.currentTime;
+            introSound.gain.gain.linearRampToValueAtTime(0, currentTime + 4);
+            setTimeout(() => {
+                introSound.stop();
+                console.log('Intro sound faded out and stopped');
+            }, 4000);
         }
     }
     function playSound1() {
@@ -1172,6 +1188,7 @@ if (sound6Buffer) {
     
     // Animasyon Sekansı (değişmedi, sadece VR'da 5sn sonra, Desktop'ta start tuşu ile tetiklenir)
     async function runSequence() {
+        experienceRunning = true; // Experience başladı
         document.getElementById('initiating').style.display = 'block';
         try {
             await loadModel(1);
@@ -1467,6 +1484,7 @@ if (sound6Buffer) {
             if (!vrControlsActive) {
                 document.getElementById('startButton').style.display = 'block';
             }
+            experienceRunning = false; // Experience bitti
         }
     }
     
@@ -1474,7 +1492,7 @@ if (sound6Buffer) {
     const startButton = document.getElementById('startButton');
     startButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        stopIntroSound();
+        fadeOutIntroSound(); // Sorun 1 fix: Fade out intro sound
         runSequence();
         startButton.style.display = 'none';
     });
@@ -1788,5 +1806,3 @@ if (renderer.xr.isPresenting) {
     
 </body>
 </html>
-
-
