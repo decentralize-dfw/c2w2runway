@@ -259,10 +259,10 @@
         <h1>Click to Resume</h1>
     </div>
     <div id="initiating" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 400; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Initializing...</div>
-    <div id="ended" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 18px 22px; color: #fff; font-size: 48px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Experience Ended</div>
+    <div id="ended" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 12px 12px; color: #fff; font-size: 20px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Experience Ended</div>
     <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Start</button>
-    <button id="openInNewTab" style="position: absolute; left: 10px; bottom: 50px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">New Tab</button>
-    <p id="iframeWarning" style="position: absolute; left: 10px; bottom: 30px; color: white; font-size: 7.5px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">For the full experience, please click the 'New Tab' button below.</p>
+    <button id="openInNewTab" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">New tab</button>
+    <p id="iframeWarning" style="position: absolute; left: 85px; top: 20px; color: white; font-size: 7.5px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">For the full experience, open the code in a new browser page.</p>
     <button id="fullscreenButton" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Full Screen</button>
     <button id="projectInfoButton" style="position: absolute; right: 300px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Project Info</button>
     <button id="studioInfoButton" style="position: absolute; right: 200px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Studio Info</button>
@@ -470,138 +470,142 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     let bootShown = false;
 
     function setupDesktopControls() {
-        isInIframe = window.self !== window.top;
-        const blocker = document.getElementById('instructions');
-        const resume = document.getElementById('resume');
-        const startButton = document.getElementById('startButton');
-        const iframeWarning = document.getElementById('iframeWarning');
+    isInIframe = window.self !== window.top;
+    const blocker = document.getElementById('instructions');
+    const resume = document.getElementById('resume');
+    const startButton = document.getElementById('startButton');
+    const iframeWarning = document.getElementById('iframeWarning');
+    const openInNewTab = document.getElementById('openInNewTab');
 
-        if (isInIframe) {
-            console.log('Iframe detected, using OrbitControls for mouse rotation');
+    if (isInIframe) {
+        console.log('Iframe detected, using OrbitControls for mouse rotation');
+        blocker.style.display = 'none';
+        resume.style.display = 'none';
+        startButton.style.display = 'none';
+        backgroundImg.style.display = 'none';
+        document.getElementById('fullscreenButton').style.display = 'none';
+        iframeWarning.style.display = 'block';
+        openInNewTab.style.display = 'block';
+        orbitControls = new OrbitControls(camera, renderer.domElement);
+        orbitControls.target.set(0, 0.5, 0);
+        orbitControls.enableZoom = true;
+        orbitControls.enablePan = false;
+        orbitControls.minDistance = 8;
+        orbitControls.maxDistance = 8;
+        orbitControls.minPolarAngle = Math.PI / 2;
+        orbitControls.maxPolarAngle = Math.PI / 2;
+        camera.position.set(0, 0.5, 8);
+        camera.lookAt(0, 0.5, 0);
+        setTimeout(() => {
+            if (isInIframe && !stopInIframe) {
+                document.getElementById('initiating').style.display = 'block';
+                fadeOutIntroSound();
+                runSequence();
+                isExperienceRunning = true;
+            }
+        }, 5000);
+    } else {
+        controls = new PointerLockControls(camera, document.body);
+        scene.remove(playerRig);
+        scene.add(controls.getObject());
+        camera.position.set(15, 1.8, 0);
+        controls.getObject().position.set(15, 1.8, 0);
+
+        blocker.addEventListener('click', (event) => {
+            event.stopPropagation();
+            controls.lock().catch((error) => {
+                console.error('Pointer Lock error:', error);
+                blocker.innerHTML = '<h1>Pointer Lock Blocked</h1><p>Open in a new tab for full experience.</p>';
+            });
+        });
+        controls.addEventListener('lock', () => {
             blocker.style.display = 'none';
             resume.style.display = 'none';
-            startButton.style.display = 'none';
             backgroundImg.style.display = 'none';
-            document.getElementById('fullscreenButton').style.display = 'none';
-            iframeWarning.style.display = 'block';
-            orbitControls = new OrbitControls(camera, renderer.domElement);
-            orbitControls.target.set(0, 0.5, 0);
-            orbitControls.enableZoom = true;
-            orbitControls.enablePan = false;
-            orbitControls.minDistance = 8;
-            orbitControls.maxDistance = 8;
-            orbitControls.minPolarAngle = Math.PI / 2;
-            orbitControls.maxPolarAngle = Math.PI / 2;
-            camera.position.set(0, 0.5, 8);
-            camera.lookAt(0, 0.5, 0);
-            setTimeout(() => {
-                if (isInIframe && !stopInIframe) {
-                    document.getElementById('initiating').style.display = 'block';
-                    fadeOutIntroSound();
-                    runSequence();
-                    isExperienceRunning = true;
-                }
-            }, 5000);
-        } else {
-            controls = new PointerLockControls(camera, document.body);
-            scene.remove(playerRig);
-            scene.add(controls.getObject());
-            camera.position.set(15, 1.8, 0);
-            controls.getObject().position.set(15, 1.8, 0);
-
-            blocker.addEventListener('click', (event) => {
-                event.stopPropagation();
-                controls.lock().catch((error) => {
-                    console.error('Pointer Lock error:', error);
-                    blocker.innerHTML = '<h1>Pointer Lock Blocked</h1><p>Open in a new tab for full experience.</p>';
-                });
-            });
-            controls.addEventListener('lock', () => {
-                blocker.style.display = 'none';
-                resume.style.display = 'none';
-                backgroundImg.style.display = 'none';
-                if (!experienceRunning) {
-                    startButton.style.display = 'block';
-                }
-            });
-            controls.addEventListener('unlock', () => {
-                resume.style.display = 'block';
-            });
-            document.addEventListener('click', () => {
-                if (!controls.isLocked && bootShown) {
-                    controls.lock().catch((error) => console.error('Pointer Lock error:', error));
-                }
-            });
-            if (bootShown && !controls.isLocked) {
-                blocker.style.display = 'block';
+            if (!experienceRunning) {
+                startButton.style.display = 'block';
             }
+        });
+        controls.addEventListener('unlock', () => {
+            resume.style.display = 'block';
+        });
+        document.addEventListener('click', () => {
+            if (!controls.isLocked && bootShown) {
+                controls.lock().catch((error) => console.error('Pointer Lock error:', error));
+            }
+        });
+        if (bootShown && !controls.isLocked) {
+            blocker.style.display = 'block';
         }
     }
+}
 
-    function setupVRControls() {
-        vrControlsActive = true;
-        document.getElementById('fullscreenButton').style.display = 'none';
-        document.getElementById('projectInfoButton').style.display = 'none';
-        document.getElementById('studioInfoButton').style.display = 'none';
-        document.getElementById('hintButton').style.display = 'none';
-        document.getElementById('creatorsNoteButton').style.display = 'none';
-        document.getElementById('instructions').style.display = 'none';
+   function setupVRControls() {
+    vrControlsActive = true;
+    document.getElementById('fullscreenButton').style.display = 'none';
+    document.getElementById('projectInfoButton').style.display = 'none';
+    document.getElementById('studioInfoButton').style.display = 'none';
+    document.getElementById('hintButton').style.display = 'none';
+    document.getElementById('creatorsNoteButton').style.display = 'none';
+    document.getElementById('instructions').style.display = 'none';
+    document.getElementById('openInNewTab').style.display = 'none';
+    document.getElementById('iframeWarning').style.display = 'none';
 
-        backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
-        backgroundImg.style.display = 'block';
+    backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
+    backgroundImg.style.display = 'block';
 
-        const vrButton = VRButton.createButton(renderer);
-        vrButton.textContent = 'Touch to Start';
-        vrButton.id = 'VRButton';
-        document.body.appendChild(vrButton);
+    const vrButton = VRButton.createButton(renderer);
+    vrButton.textContent = 'Touch to Start';
+    vrButton.id = 'VRButton';
+    document.body.appendChild(vrButton);
 
-        const controllerModelFactory = new XRControllerModelFactory();
-        const controller1 = renderer.xr.getController(0);
-        const controllerGrip1 = renderer.xr.getControllerGrip(0);
-        controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-        playerRig.add(controller1);
-        playerRig.add(controllerGrip1);
-        vrControllers.push(controller1);
+    const controllerModelFactory = new XRControllerModelFactory();
+    const controller1 = renderer.xr.getController(0);
+    const controllerGrip1 = renderer.xr.getControllerGrip(0);
+    controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+    playerRig.add(controller1);
+    playerRig.add(controllerGrip1);
+    vrControllers.push(controller1);
 
-        const controller2 = renderer.xr.getController(1);
-        const controllerGrip2 = renderer.xr.getControllerGrip(1);
-        controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-        playerRig.add(controller2);
-        playerRig.add(controllerGrip2);
-        vrControllers.push(controller2);
+    const controller2 = renderer.xr.getController(1);
+    const controllerGrip2 = renderer.xr.getControllerGrip(1);
+    controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+    playerRig.add(controller2);
+    playerRig.add(controllerGrip2);
+    vrControllers.push(controller2);
 
-        function onConnected(event) {
-            event.target.userData.gamepad = event.data.gamepad;
-            event.target.userData.hand = event.data.handedness;
-            console.log(`Controller connected: ${event.data.handedness}`);
-        }
-        controller1.addEventListener('connected', onConnected);
-        controller2.addEventListener('connected', onConnected);
-
-        renderer.xr.addEventListener('sessionstart', () => {
-            console.log('VR Session Started');
-
-            if (audioListener.context.state === 'suspended') {
-                audioListener.context.resume().then(() => {
-                    console.log('AudioContext resumed');
-                    const emptySound = audioListener.context.createBufferSource();
-                    emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
-                    emptySound.connect(audioListener.context.destination);
-                    emptySound.start();
-                }).catch(e => console.error('AudioContext resume failed:', e));
-            }
-
-            document.getElementById('startButton').style.display = 'none';
-            backgroundImg.style.display = 'none';
-            document.getElementById('initiating').style.display = 'block';
-            runSequence();
-        });
-
-        renderer.xr.addEventListener('sessionend', () => {
-            console.log('VR Session Ended');
-            window.location.reload();
-        });
+    function onConnected(event) {
+        event.target.userData.gamepad = event.data.gamepad;
+        event.target.userData.hand = event.data.handedness;
+        console.log(`Controller connected: ${event.data.handedness}`);
     }
+    controller1.addEventListener('connected', onConnected);
+    controller2.addEventListener('connected', onConnected);
+
+    renderer.xr.addEventListener('sessionstart', () => {
+        console.log('VR Session Started');
+
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
+                console.log('AudioContext resumed');
+                const emptySound = audioListener.context.createBufferSource();
+                emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
+                emptySound.connect(audioListener.context.destination);
+                emptySound.start();
+            }).catch(e => console.error('AudioContext resume failed:', e));
+        }
+
+        document.getElementById('startButton').style.display = 'none';
+        backgroundImg.style.display = 'none';
+        document.getElementById('initiating').style.display = 'block';
+        runSequence();
+    });
+
+    renderer.xr.addEventListener('sessionend', () => {
+        console.log('VR Session Ended');
+        window.location.reload();
+    });
+}
 
     async function setupEnvironment() {
         try {
@@ -1500,29 +1504,31 @@ if (sound6Buffer) {
         startButton.style.display = 'none';
     });
 
+
+
 const openInNewTabButton = document.getElementById('openInNewTab');
-if (isInIframe) {
-    openInNewTabButton.style.display = 'block';
-}
+
 openInNewTabButton.addEventListener('click', (event) => {
     event.stopPropagation();
-    stopInIframe = true;
-    isExperienceRunning = false;
-    models.forEach(entry => {
-        if (entry && entry.mixer) {
-            entry.mixer.stopAllAction();
-        }
-    });
-    if (introSound && introSound.isPlaying) introSound.stop();
-    if (sound1 && sound1.isPlaying) sound1.stop();
-    if (sound2 && sound2.isPlaying) sound2.stop();
-    if (sound3 && sound3.isPlaying) sound3.stop();
-    if (sound4 && sound4.isPlaying) sound4.stop();
-    if (sound5 && sound5.isPlaying) sound5.stop();
-    if (sound6 && sound6.isPlaying) sound6.stop();
-    document.getElementById('description').style.display = 'none';
-    document.getElementById('ended').style.display = 'block';
-    window.open(window.location.href, '_blank');
+    if (isInIframe) {
+        stopInIframe = true;
+        isExperienceRunning = false;
+        models.forEach(entry => {
+            if (entry && entry.mixer) {
+                entry.mixer.stopAllAction();
+            }
+        });
+        if (introSound && introSound.isPlaying) introSound.stop();
+        if (sound1 && sound1.isPlaying) sound1.stop();
+        if (sound2 && sound2.isPlaying) sound2.stop();
+        if (sound3 && sound3.isPlaying) sound3.stop();
+        if (sound4 && sound4.isPlaying) sound4.stop();
+        if (sound5 && sound5.isPlaying) sound5.stop();
+        if (sound6 && sound6.isPlaying) sound6.stop();
+        document.getElementById('description').style.display = 'none';
+        document.getElementById('ended').style.display = 'block';
+        window.open('https://6qeg7mtbgmqcybfr52z7r45kehdlpnl3fpftqk5vry5saurgu4xq.arweave.net/9AhvsmEzICwEse6z-POqIca3tXsryzgrtY47IFImpy8', '_blank');
+    }
 });
 
     const fullscreenButton = document.getElementById('fullscreenButton');
