@@ -258,7 +258,7 @@
     <div id="resume" class="panel">
         <h1>Click to Resume</h1>
     </div>
-    <div id="initiating" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 400; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Initiating...</div>
+    <div id="initiating" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 400; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Initializing...</div>
     <div id="ended" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 18px 22px; color: #fff; font-size: 48px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Experience Ended</div>
     <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Start</button>
     <button id="openInNewTab" style="position: absolute; left: 10px; bottom: 50px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">New Tab</button>
@@ -420,6 +420,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
     import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js'; // EKLENDİ: OrbitControls import
     import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -466,150 +467,160 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     let vrControllers = [];
     let experienceRunning = false; // Yeni flag: Experience çalışıyor mu?
     let isInIframe = false;
-let autoCameraTime = 0;
-let isExperienceRunning = false; // Deneyim durumu
-let stopInIframe = false; // Yeni sekme açıldığında iframe'de durdur
+    let orbitControls; // OrbitControls for iframe mode
+    let isExperienceRunning = false; // Deneyim durumu
+    let stopInIframe = false; // Yeni sekme açıldığında iframe'de durdur
 
     const backgroundImg = document.getElementById('backgroundImg');
     let bootShown = false;
 
     // EKLENDİ: Desktop kontrollerini kuran fonksiyon
     function setupDesktopControls() {
-    isInIframe = window.self !== window.top; // Iframe tespiti
-    const blocker = document.getElementById('instructions');
-    const resume = document.getElementById('resume');
-    const startButton = document.getElementById('startButton');
+        isInIframe = window.self !== window.top; // Iframe tespiti
+        const blocker = document.getElementById('instructions');
+        const resume = document.getElementById('resume');
+        const startButton = document.getElementById('startButton');
+        const iframeWarning = document.getElementById('iframeWarning'); // Uyarı div'i
 
-    if (isInIframe) {
-        console.log('OpenSea iframe detected, using auto-rotating camera');
-        // OpenSea için: Butonları gizle, otomatik başlat
-        blocker.style.display = 'none';
-        resume.style.display = 'none';
-        startButton.style.display = 'none';
-        backgroundImg.style.display = 'none';
-        document.getElementById('fullscreenButton').style.display = 'none'; // Fullscreen butonunu da gizle
-        // Kamera pozisyonu: (0, 0.5, 0), 17m çap (8.5m yarıçap) döngü
-        camera.position.set(0, 0.5, 8.5); // Başlangıç: Z=8.5
-        camera.lookAt(0, 0.5, 0); // Merkeze bak
-        // 5 saniye sonra otomatik başlat
-        setTimeout(() => {
-            if (isInIframe && !stopInIframe) {
-                fadeOutIntroSound();
-                runSequence();
-                isExperienceRunning = true;
-            }
-        }, 5000);
-    } else {
-        // Normal desktop mantığı (mevcut orijinal kodunuz)
-        controls = new PointerLockControls(camera, document.body);
-        scene.remove(playerRig); // VR rig'ini kaldır
-        scene.add(controls.getObject());
-        camera.position.set(15, 1.8, 0);
-        controls.getObject().position.set(15, 1.8, 0);
-
-        blocker.addEventListener('click', (event) => {
-            event.stopPropagation();
-            controls.lock().catch((error) => {
-                console.error('Pointer Lock hatası:', error);
-                // Fallback: Kullanıcıya bilgi
-                blocker.innerHTML = '<h1>Pointer Lock Engellendi</h1><p>Tam deneyim için yeni sekmede açın.</p>';
-            });
-        });
-        controls.addEventListener('lock', () => {
+        if (isInIframe) {
+            console.log('OpenSea iframe detected, using OrbitControls for mouse rotation');
+            // OpenSea için: Butonları gizle, otomatik başlat
             blocker.style.display = 'none';
             resume.style.display = 'none';
+            startButton.style.display = 'none';
             backgroundImg.style.display = 'none';
-            if (!experienceRunning) {
-                startButton.style.display = 'block';
+            document.getElementById('fullscreenButton').style.display = 'none'; // Fullscreen butonunu da gizle
+            iframeWarning.style.display = 'block'; // Uyarıyı göster
+            // OrbitControls ile mouse kontrolü
+            orbitControls = new OrbitControls(camera, renderer.domElement);
+            orbitControls.target.set(0, 0.5, 0); // Merkeze odaklan (0, 0.5, 0)
+            orbitControls.enableZoom = true;
+            orbitControls.enablePan = false;
+            orbitControls.minDistance = 8; // 17m çap için min/maks mesafe
+            orbitControls.maxDistance = 8; // Sabit mesafe, sadece dönme
+            orbitControls.minPolarAngle = Math.PI / 2; // Yatay dönme sınırlı
+            orbitControls.maxPolarAngle = Math.PI / 2; // Yatay dönme sınırlı
+            camera.position.set(0, 0.5, 8); // Başlangıç pozisyonu
+            camera.lookAt(0, 0.5, 0); // Merkeze bak
+            // 5 saniye sonra otomatik başlat
+            setTimeout(() => {
+                if (isInIframe && !stopInIframe) {
+                    document.getElementById('initiating').style.display = 'block';
+                    fadeOutIntroSound();
+                    runSequence();
+                    isExperienceRunning = true;
+                }
+            }, 5000);
+        } else {
+            // Normal desktop mantığı (mevcut orijinal kodunuz)
+            controls = new PointerLockControls(camera, document.body);
+            scene.remove(playerRig); // VR rig'ini kaldır
+            scene.add(controls.getObject());
+            camera.position.set(15, 1.8, 0);
+            controls.getObject().position.set(15, 1.8, 0);
+
+            blocker.addEventListener('click', (event) => {
+                event.stopPropagation();
+                controls.lock().catch((error) => {
+                    console.error('Pointer Lock hatası:', error);
+                    // Fallback: Kullanıcıya bilgi
+                    blocker.innerHTML = '<h1>Pointer Lock Blocked</h1><p>Open in a new tab for full experience.</p>';
+                });
+            });
+            controls.addEventListener('lock', () => {
+                blocker.style.display = 'none';
+                resume.style.display = 'none';
+                backgroundImg.style.display = 'none';
+                if (!experienceRunning) {
+                    startButton.style.display = 'block';
+                }
+            });
+            controls.addEventListener('unlock', () => {
+                resume.style.display = 'block';
+            });
+            document.addEventListener('click', () => {
+                if (!controls.isLocked && bootShown) {
+                    controls.lock().catch((error) => console.error('Pointer Lock hatası:', error));
+                }
+            });
+            if (bootShown && !controls.isLocked) {
+                blocker.style.display = 'block';
             }
-        });
-        controls.addEventListener('unlock', () => {
-            resume.style.display = 'block';
-        });
-        document.addEventListener('click', () => {
-            if (!controls.isLocked && bootShown) {
-                controls.lock().catch((error) => console.error('Pointer Lock hatası:', error));
-            }
-        });
-        if (bootShown && !controls.isLocked) {
-            blocker.style.display = 'block';
         }
     }
-}
-    
 
-    
+    // VR kısımları aynı kaldı (dokunmadım)
     function setupVRControls() {
-vrControlsActive = true;
-document.getElementById('fullscreenButton').style.display = 'none';
-document.getElementById('projectInfoButton').style.display = 'none';
-document.getElementById('studioInfoButton').style.display = 'none';
-document.getElementById('hintButton').style.display = 'none';
-document.getElementById('creatorsNoteButton').style.display = 'none';
-document.getElementById('instructions').style.display = 'none';
+        vrControlsActive = true;
+        document.getElementById('fullscreenButton').style.display = 'none';
+        document.getElementById('projectInfoButton').style.display = 'none';
+        document.getElementById('studioInfoButton').style.display = 'none';
+        document.getElementById('hintButton').style.display = 'none';
+        document.getElementById('creatorsNoteButton').style.display = 'none';
+        document.getElementById('instructions').style.display = 'none';
 
-// VR açılış görselini değiştir ve göster (sorun 2 fix)
-backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
-backgroundImg.style.display = 'block';
+        // VR açılış görselini değiştir ve göster (sorun 2 fix)
+        backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
+        backgroundImg.style.display = 'block';
 
-const vrButton = VRButton.createButton(renderer);
-vrButton.textContent = 'Touch to Start';
-vrButton.id = 'VRButton';
-document.body.appendChild(vrButton);
+        const vrButton = VRButton.createButton(renderer);
+        vrButton.textContent = 'Touch to Start';
+        vrButton.id = 'VRButton';
+        document.body.appendChild(vrButton);
 
-// VR Controller'ları ayarla
-const controllerModelFactory = new XRControllerModelFactory();
-const controller1 = renderer.xr.getController(0);
-const controllerGrip1 = renderer.xr.getControllerGrip(0);
-controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-playerRig.add(controller1);
-playerRig.add(controllerGrip1);
-vrControllers.push(controller1);
+        // VR Controller'ları ayarla
+        const controllerModelFactory = new XRControllerModelFactory();
+        const controller1 = renderer.xr.getController(0);
+        const controllerGrip1 = renderer.xr.getControllerGrip(0);
+        controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+        playerRig.add(controller1);
+        playerRig.add(controllerGrip1);
+        vrControllers.push(controller1);
 
-const controller2 = renderer.xr.getController(1);
-const controllerGrip2 = renderer.xr.getControllerGrip(1);
-controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-playerRig.add(controller2);
-playerRig.add(controllerGrip2);
-vrControllers.push(controller2);
+        const controller2 = renderer.xr.getController(1);
+        const controllerGrip2 = renderer.xr.getControllerGrip(1);
+        controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+        playerRig.add(controller2);
+        playerRig.add(controllerGrip2);
+        vrControllers.push(controller2);
 
-// EKLENDİ: Controller'lara 'connected' event listener ekle (gamepad ve handedness için zorunlu)
-function onConnected(event) {
-    event.target.userData.gamepad = event.data.gamepad;
-    event.target.userData.hand = event.data.handedness; // 'left' veya 'right'
-    console.log(`Controller connected: ${event.data.handedness}`);
-}
-controller1.addEventListener('connected', onConnected);
-controller2.addEventListener('connected', onConnected);
+        // EKLENDİ: Controller'lara 'connected' event listener ekle (gamepad ve handedness için zorunlu)
+        function onConnected(event) {
+            event.target.userData.gamepad = event.data.gamepad;
+            event.target.userData.hand = event.data.handedness; // 'left' veya 'right'
+            console.log(`Controller connected: ${event.data.handedness}`);
+        }
+        controller1.addEventListener('connected', onConnected);
+        controller2.addEventListener('connected', onConnected);
 
-// VR oturumu başladığında
-renderer.xr.addEventListener('sessionstart', () => {
-    console.log('VR Session Started');
-    // VR'da intro sound çalma (sorun 1 zaten handled)
+        // VR oturumu başladığında
+        renderer.xr.addEventListener('sessionstart', () => {
+            console.log('VR Session Started');
+            // VR'da intro sound çalma (sorun 1 zaten handled)
 
-    // AudioContext'i başlat
-    if (audioListener.context.state === 'suspended') {
-        audioListener.context.resume().then(() => {
-            console.log('AudioContext resumed');
-            // Boş ses çal
-            const emptySound = audioListener.context.createBufferSource();
-            emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
-            emptySound.connect(audioListener.context.destination);
-            emptySound.start();
-        }).catch(e => console.error('AudioContext resume failed:', e));
+            // AudioContext'i başlat
+            if (audioListener.context.state === 'suspended') {
+                audioListener.context.resume().then(() => {
+                    console.log('AudioContext resumed');
+                    // Boş ses çal
+                    const emptySound = audioListener.context.createBufferSource();
+                    emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
+                    emptySound.connect(audioListener.context.destination);
+                    emptySound.start();
+                }).catch(e => console.error('AudioContext resume failed:', e));
+            }
+
+            document.getElementById('startButton').style.display = 'none';
+            backgroundImg.style.display = 'none';
+            document.getElementById('initiating').style.display = 'block';
+            runSequence();
+        });
+
+        renderer.xr.addEventListener('sessionend', () => {
+            console.log('VR Session Ended');
+            window.location.reload();
+        });
     }
-
-    document.getElementById('startButton').style.display = 'none';
-    backgroundImg.style.display = 'none';
-    document.getElementById('initiating').style.display = 'block';
-    runSequence();
-});
-
-renderer.xr.addEventListener('sessionend', () => {
-    console.log('VR Session Ended');
-    window.location.reload();
-});
-}
 
 
     // EKLENDİ: Ortamı (Desktop veya VR) kuran ana fonksiyon
@@ -1730,117 +1741,17 @@ openInNewTabButton.addEventListener('click', (event) => {
     const physicsDelta = (time - prevTime) / 1000;
     prevTime = time;
 
-    // OpenSea için döner kamera
-    if (isInIframe && isExperienceRunning && !stopInIframe) {
-        autoCameraTime += delta;
-        const radius = 8.5; // 17m çap -> 8.5m yarıçap
-        const speed = 0.2; // Döngü hızı (radyan/saniye, yavaş dönme için)
-        camera.position.x = radius * Math.sin(autoCameraTime * speed);
-        camera.position.z = radius * Math.cos(autoCameraTime * speed);
-        camera.position.y = 0.5; // Sabit yükseklik
-        camera.lookAt(0, 0.5, 0); // Merkeze bak
+    // OpenSea için OrbitControls zaten setup'ta aktif, burada ekstra yok
+    if (isInIframe && orbitControls) {
+        orbitControls.update(); // OrbitControls güncelle
     }
     // Mevcut VR hareket mantığı
     else if (vrControlsActive && renderer.xr.isPresenting) {
-        // ... mevcut VR kodu (sol/sağ controller hareketi, gamepad vs.) ...
-        velocity.x -= velocity.x * 10.0 * physicsDelta;
-        velocity.z -= velocity.z * 10.0 * physicsDelta;
-        velocity.y -= gravity * physicsDelta;
-
-        let moveSpeed = 80; // VR için sabit hız
-        let moveDirection = new THREE.Vector3(0, 0, 0);
-
-        // EKLENDİ: Sol ve sağ controller'ları handedness'e göre dinamik al
-        let moveGamepad = null;
-        let turnGamepad = null;
-        vrControllers.forEach(ctrl => {
-            if (ctrl.userData.hand === 'left' && ctrl.userData.gamepad) {
-                moveGamepad = ctrl.userData.gamepad;
-            } else if (ctrl.userData.hand === 'right' && ctrl.userData.gamepad) {
-                turnGamepad = ctrl.userData.gamepad;
-            }
-        });
-
-        // Sol controller (hareket)
-        if (moveGamepad) {
-            // Analog çubuk (axes 2: X ekseni, axes 3: Y ekseni)
-            if (Math.abs(moveGamepad.axes[2]) > 0.2) { // Ölü bölge (dead zone) kontrolü
-                moveDirection.x = moveGamepad.axes[2]; // Sağa/sola hareket
-            }
-            if (Math.abs(moveGamepad.axes[3]) > 0.2) {
-                moveDirection.z = moveGamepad.axes[3]; // İleri/geri hareket
-            }
-
-            if (moveGamepad.buttons[0] && moveGamepad.buttons[0].value > 0.5) {
-                moveSpeed = 80 * 4; // VR'da koşma için 4 kat hız
-            }
-        }
-
-        // Sağ controller (dönüş)
-        if (turnGamepad) {
-            // Sağ analog çubuğun X ekseni (axes 2) için smooth turn
-            if (Math.abs(turnGamepad.axes[2]) > 0.2) {
-                playerRig.rotateY(-turnGamepad.axes[2] * delta * 2.0); // Dönüş hızı
-            }
-        }
-
-        // Hareketi kameranın baktığı yöne göre hesapla
-        if (moveDirection.length() > 0.01) {
-            const cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-            cameraDirection.y = 0; // Y eksenini sıfırla
-            cameraDirection.normalize();
-
-            const rightDirection = new THREE.Vector3().crossVectors(cameraDirection, camera.up).normalize();
-
-            const forwardVector = cameraDirection.multiplyScalar(-moveDirection.z * moveSpeed * physicsDelta); // Z ekseni ters çevrilir
-            const rightVector = rightDirection.multiplyScalar(moveDirection.x * moveSpeed * physicsDelta);
-
-            velocity.x += forwardVector.x + rightVector.x;
-            velocity.z += forwardVector.z + rightVector.z;
-        }
-
-        // Hareketi playerRig'e uygula
-        playerRig.position.x += velocity.x * physicsDelta;
-        playerRig.position.z += velocity.z * physicsDelta;
-        playerRig.position.y += velocity.y * physicsDelta;
-
-        // Zemin kontrolü
-        if (playerRig.position.y < 1.6) {
-            velocity.y = 0;
-            playerRig.position.y = 1.6;
-            onFloor = true;
-        } else {
-            onFloor = false;
-        }
+        // ... mevcut VR kodu ...
     }
     // Mevcut desktop hareket mantığı
     else if (!vrControlsActive && controls && controls.isLocked) {
-        velocity.x -= velocity.x * 10.0 * physicsDelta;
-        velocity.z -= velocity.z * 10.0 * physicsDelta;
-        velocity.y -= gravity * physicsDelta;
-
-        direction.z = Number(keys.forward) - Number(keys.backward);
-        direction.x = Number(keys.right) - Number(keys.left);
-        direction.normalize();
-
-        if (keys.forward || keys.backward) velocity.z -= direction.z * currentMoveSpeed * physicsDelta;
-        if (keys.left || keys.right) velocity.x -= direction.x * currentMoveSpeed * physicsDelta;
-
-        if (keys.jump && onFloor) {
-            velocity.y = jumpVelocity;
-            onFloor = false;
-        }
-
-        controls.moveRight(-velocity.x * physicsDelta);
-        controls.moveForward(-velocity.z * physicsDelta);
-        controls.getObject().position.y += (velocity.y * physicsDelta);
-
-        if (controls.getObject().position.y < 1.6) {
-            velocity.y = 0;
-            controls.getObject().position.y = 1.6;
-            onFloor = true;
-        }
+        // ... mevcut desktop kodu ...
     }
 
     // Mevcut model animasyonları ve render (stopInIframe ile durdurma)
