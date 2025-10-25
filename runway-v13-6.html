@@ -258,10 +258,11 @@
     <div id="resume" class="panel">
         <h1>Click to Resume</h1>
     </div>
-    <div id="initiating" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 400; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Initiating...</div>
+    <div id="initiating" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 400; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Initializing...</div>
     <div id="ended" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 18px 22px; color: #fff; font-size: 48px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Experience Ended</div>
     <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Start</button>
     <button id="openInNewTab" style="position: absolute; left: 10px; bottom: 50px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">New Tab</button>
+    <p id="iframeWarning" style="position: absolute; left: 10px; bottom: 30px; color: white; font-size: 7.5px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">For the full experience, please click the 'New Tab' button below.</p>
     <button id="fullscreenButton" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Full Screen</button>
     <button id="projectInfoButton" style="position: absolute; right: 300px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Project Info</button>
     <button id="studioInfoButton" style="position: absolute; right: 200px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Studio Info</button>
@@ -420,10 +421,10 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
     import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-    // EKLENDİ: VR importları
     import { VRButton } from 'three/addons/webxr/VRButton.js';
     import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
     
@@ -438,192 +439,170 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.physicallyCorrectLights = true;
 
-    // EKLENDİ: VR'ı etkinleştir
     renderer.xr.enabled = true;
 
     document.body.appendChild(renderer.domElement);
 
-    // EKLENDİ: VR için oyuncu "rig"i (kamera ve kontrolleri taşıyacak)
     const playerRig = new THREE.Group();
-    playerRig.position.set(15, 1.6, 0); // Başlangıç pozisyonu (zemin seviyesi)
+    playerRig.position.set(15, 1.6, 0);
     scene.add(playerRig);
-    playerRig.add(camera); // Kamerayı rig'e ekle
+    playerRig.add(camera);
 
-    // Post-processing for bloom
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.1, 0.4, 0.85); // Low general bloom: strength 0.1
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.1, 0.4, 0.85);
     composer.addPass(bloomPass);
     
-    // Audio Listener
     const audioListener = new THREE.AudioListener();
     camera.add(audioListener);
     
-    // DEĞİŞTİ: Kontrol değişkenleri
-    let controls; // Desktop controls
+    let controls;
     let vrControlsActive = false;
     let vrControllers = [];
-    let experienceRunning = false; // Yeni flag: Experience çalışıyor mu?
+    let experienceRunning = false;
     let isInIframe = false;
-let orbitControls;
-let isExperienceRunning = false;
-let stopInIframe = false;
+    let orbitControls;
+    let isExperienceRunning = false;
+    let stopInIframe = false;
 
     const backgroundImg = document.getElementById('backgroundImg');
     let bootShown = false;
 
-    
-    
-   function setupDesktopControls() {
-    isInIframe = window.self !== window.top;
-    console.log('Is in iframe:', isInIframe);
-    const blocker = document.getElementById('instructions');
-    const resume = document.getElementById('resume');
-    const startButton = document.getElementById('startButton');
-    const iframeWarning = document.getElementById('iframeWarning');
-    if (isInIframe) {
-        console.log('Iframe detected, using OrbitControls for mouse rotation');
-        blocker.style.display = 'none';
-        resume.style.display = 'none';
-        startButton.style.display = 'none';
-        backgroundImg.style.display = 'none';
-        document.getElementById('fullscreenButton').style.display = 'none';
-        iframeWarning.style.display = 'block';
-        openInNewTabButton.style.display = 'block';
-        orbitControls = new OrbitControls(camera, renderer.domElement);
-        orbitControls.target.set(0, 0.4, 0);
-        orbitControls.enableZoom = false;
-        orbitControls.enablePan = false;
-        orbitControls.minDistance = 16;
-        orbitControls.maxDistance = 16;
-        orbitControls.minPolarAngle = Math.PI / 2;
-        orbitControls.maxPolarAngle = Math.PI / 2;
-        camera.position.set(16, 1.6, 0);
-        camera.lookAt(0, 0.4, 0);
-        setTimeout(() => {
-            if (isInIframe && !stopInIframe) {
-                document.getElementById('initiating').style.display = 'block';
-                fadeOutIntroSound();
-                runSequence();
-                isExperienceRunning = true;
-            }
-        }, 5000);
-    } else {
-        openInNewTabButton.style.display = 'none';
-        iframeWarning.style.display = 'none';
-        controls = new PointerLockControls(camera, document.body);
-        scene.remove(playerRig);
-        scene.add(controls.getObject());
-        camera.position.set(16, 1.6, 0);
-        controls.getObject().position.set(16, 1.6, 0);
-        controls.getObject().lookAt(0, 0.4, 0);
+    function setupDesktopControls() {
+        isInIframe = window.self !== window.top;
+        const blocker = document.getElementById('instructions');
+        const resume = document.getElementById('resume');
+        const startButton = document.getElementById('startButton');
+        const iframeWarning = document.getElementById('iframeWarning');
 
-        blocker.addEventListener('click', (event) => {
-            event.stopPropagation();
-            controls.lock().catch((error) => {
-                console.error('Pointer Lock error:', error);
-                blocker.innerHTML = '<h1>Pointer Lock Blocked</h1><p>Open in a new tab for full experience.</p>';
-            });
-        });
-        controls.addEventListener('lock', () => {
+        if (isInIframe) {
+            console.log('Iframe detected, using OrbitControls for mouse rotation');
             blocker.style.display = 'none';
             resume.style.display = 'none';
+            startButton.style.display = 'none';
             backgroundImg.style.display = 'none';
-            if (!experienceRunning) {
-                startButton.style.display = 'block';
+            document.getElementById('fullscreenButton').style.display = 'none';
+            iframeWarning.style.display = 'block';
+            orbitControls = new OrbitControls(camera, renderer.domElement);
+            orbitControls.target.set(0, 0.5, 0);
+            orbitControls.enableZoom = true;
+            orbitControls.enablePan = false;
+            orbitControls.minDistance = 8;
+            orbitControls.maxDistance = 8;
+            orbitControls.minPolarAngle = Math.PI / 2;
+            orbitControls.maxPolarAngle = Math.PI / 2;
+            camera.position.set(0, 0.5, 8);
+            camera.lookAt(0, 0.5, 0);
+            setTimeout(() => {
+                if (isInIframe && !stopInIframe) {
+                    document.getElementById('initiating').style.display = 'block';
+                    fadeOutIntroSound();
+                    runSequence();
+                    isExperienceRunning = true;
+                }
+            }, 5000);
+        } else {
+            controls = new PointerLockControls(camera, document.body);
+            scene.remove(playerRig);
+            scene.add(controls.getObject());
+            camera.position.set(15, 1.8, 0);
+            controls.getObject().position.set(15, 1.8, 0);
+
+            blocker.addEventListener('click', (event) => {
+                event.stopPropagation();
+                controls.lock().catch((error) => {
+                    console.error('Pointer Lock error:', error);
+                    blocker.innerHTML = '<h1>Pointer Lock Blocked</h1><p>Open in a new tab for full experience.</p>';
+                });
+            });
+            controls.addEventListener('lock', () => {
+                blocker.style.display = 'none';
+                resume.style.display = 'none';
+                backgroundImg.style.display = 'none';
+                if (!experienceRunning) {
+                    startButton.style.display = 'block';
+                }
+            });
+            controls.addEventListener('unlock', () => {
+                resume.style.display = 'block';
+            });
+            document.addEventListener('click', () => {
+                if (!controls.isLocked && bootShown) {
+                    controls.lock().catch((error) => console.error('Pointer Lock error:', error));
+                }
+            });
+            if (bootShown && !controls.isLocked) {
+                blocker.style.display = 'block';
             }
-        });
-        controls.addEventListener('unlock', () => {
-            resume.style.display = 'block';
-        });
-        document.addEventListener('click', () => {
-            if (!controls.isLocked && bootShown) {
-                controls.lock().catch((error) => console.error('Pointer Lock error:', error));
-            }
-        });
-        if (bootShown && !controls.isLocked) {
-            blocker.style.display = 'block';
         }
     }
-}
 
-    
     function setupVRControls() {
-vrControlsActive = true;
-document.getElementById('fullscreenButton').style.display = 'none';
-document.getElementById('projectInfoButton').style.display = 'none';
-document.getElementById('studioInfoButton').style.display = 'none';
-document.getElementById('hintButton').style.display = 'none';
-document.getElementById('creatorsNoteButton').style.display = 'none';
-document.getElementById('instructions').style.display = 'none';
+        vrControlsActive = true;
+        document.getElementById('fullscreenButton').style.display = 'none';
+        document.getElementById('projectInfoButton').style.display = 'none';
+        document.getElementById('studioInfoButton').style.display = 'none';
+        document.getElementById('hintButton').style.display = 'none';
+        document.getElementById('creatorsNoteButton').style.display = 'none';
+        document.getElementById('instructions').style.display = 'none';
 
-// VR açılış görselini değiştir ve göster (sorun 2 fix)
-backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
-backgroundImg.style.display = 'block';
+        backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
+        backgroundImg.style.display = 'block';
 
-const vrButton = VRButton.createButton(renderer);
-vrButton.textContent = 'Touch to Start';
-vrButton.id = 'VRButton';
-document.body.appendChild(vrButton);
+        const vrButton = VRButton.createButton(renderer);
+        vrButton.textContent = 'Touch to Start';
+        vrButton.id = 'VRButton';
+        document.body.appendChild(vrButton);
 
-// VR Controller'ları ayarla
-const controllerModelFactory = new XRControllerModelFactory();
-const controller1 = renderer.xr.getController(0);
-const controllerGrip1 = renderer.xr.getControllerGrip(0);
-controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-playerRig.add(controller1);
-playerRig.add(controllerGrip1);
-vrControllers.push(controller1);
+        const controllerModelFactory = new XRControllerModelFactory();
+        const controller1 = renderer.xr.getController(0);
+        const controllerGrip1 = renderer.xr.getControllerGrip(0);
+        controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+        playerRig.add(controller1);
+        playerRig.add(controllerGrip1);
+        vrControllers.push(controller1);
 
-const controller2 = renderer.xr.getController(1);
-const controllerGrip2 = renderer.xr.getControllerGrip(1);
-controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-playerRig.add(controller2);
-playerRig.add(controllerGrip2);
-vrControllers.push(controller2);
+        const controller2 = renderer.xr.getController(1);
+        const controllerGrip2 = renderer.xr.getControllerGrip(1);
+        controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+        playerRig.add(controller2);
+        playerRig.add(controllerGrip2);
+        vrControllers.push(controller2);
 
-// EKLENDİ: Controller'lara 'connected' event listener ekle (gamepad ve handedness için zorunlu)
-function onConnected(event) {
-    event.target.userData.gamepad = event.data.gamepad;
-    event.target.userData.hand = event.data.handedness; // 'left' veya 'right'
-    console.log(`Controller connected: ${event.data.handedness}`);
-}
-controller1.addEventListener('connected', onConnected);
-controller2.addEventListener('connected', onConnected);
+        function onConnected(event) {
+            event.target.userData.gamepad = event.data.gamepad;
+            event.target.userData.hand = event.data.handedness;
+            console.log(`Controller connected: ${event.data.handedness}`);
+        }
+        controller1.addEventListener('connected', onConnected);
+        controller2.addEventListener('connected', onConnected);
 
-// VR oturumu başladığında
-renderer.xr.addEventListener('sessionstart', () => {
-    console.log('VR Session Started');
-    // VR'da intro sound çalma (sorun 1 zaten handled)
+        renderer.xr.addEventListener('sessionstart', () => {
+            console.log('VR Session Started');
 
-    // AudioContext'i başlat
-    if (audioListener.context.state === 'suspended') {
-        audioListener.context.resume().then(() => {
-            console.log('AudioContext resumed');
-            // Boş ses çal
-            const emptySound = audioListener.context.createBufferSource();
-            emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
-            emptySound.connect(audioListener.context.destination);
-            emptySound.start();
-        }).catch(e => console.error('AudioContext resume failed:', e));
+            if (audioListener.context.state === 'suspended') {
+                audioListener.context.resume().then(() => {
+                    console.log('AudioContext resumed');
+                    const emptySound = audioListener.context.createBufferSource();
+                    emptySound.buffer = audioListener.context.createBuffer(1, 1, 22050);
+                    emptySound.connect(audioListener.context.destination);
+                    emptySound.start();
+                }).catch(e => console.error('AudioContext resume failed:', e));
+            }
+
+            document.getElementById('startButton').style.display = 'none';
+            backgroundImg.style.display = 'none';
+            document.getElementById('initiating').style.display = 'block';
+            runSequence();
+        });
+
+        renderer.xr.addEventListener('sessionend', () => {
+            console.log('VR Session Ended');
+            window.location.reload();
+        });
     }
 
-    document.getElementById('startButton').style.display = 'none';
-    backgroundImg.style.display = 'none';
-    document.getElementById('initiating').style.display = 'block';
-    runSequence();
-});
-
-renderer.xr.addEventListener('sessionend', () => {
-    console.log('VR Session Ended');
-    window.location.reload();
-});
-}
-
-
-    // EKLENDİ: Ortamı (Desktop veya VR) kuran ana fonksiyon
-    // ÖNCEKİ HATANIN DÜZELTMESİ: Bu fonksiyon setupVRControls'un DIŞINDA olmalı.
     async function setupEnvironment() {
         try {
             const vrSupported = navigator.xr && await navigator.xr.isSessionSupported('immersive-vr');
@@ -633,12 +612,11 @@ renderer.xr.addEventListener('sessionend', () => {
                 setupDesktopControls();
             }
         } catch (e) {
-            console.error('VR desteği kontrol edilirken hata oluştu:', e);
-            setupDesktopControls(); // Hata olursa desktop'a dön
+            console.error('Error checking VR support:', e);
+            setupDesktopControls();
         }
     }
 
-    // Hareket değişkenleri
     let baseMoveSpeed = 20;
     let currentMoveSpeed = baseMoveSpeed;
     const jumpVelocity = 5;
@@ -655,9 +633,8 @@ renderer.xr.addEventListener('sessionend', () => {
         jump: false,
         sprint: false
     };
-    // DEĞİŞTİ: Key listener'lar sadece desktop'ta (VR değilken) çalışmalı
     document.addEventListener('keydown', (event) => {
-        if (vrControlsActive) return; // VR'da iken klavyeyi yoksay
+        if (vrControlsActive) return;
         switch (event.code) {
             case 'KeyW': keys.forward = true; break;
             case 'KeyS': keys.backward = true; break;
@@ -679,10 +656,9 @@ renderer.xr.addEventListener('sessionend', () => {
         }
     });
 
-    // Gerçekçi ortam haritası (HDR)
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
-    new RGBELoader().load('https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihzftqscv7cxkdfdwgv4oux5mr7j2n77d2i6nm3juxel5pi6jqr7q', (texture) => { // hdri
+    new RGBELoader().load('https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihzftqscv7cxkdfdwgv4oux5mr7j2n77d2i6nm3juxel5pi6jqr7q', (texture) => {
         const envMap = pmremGenerator.fromEquirectangular(texture).texture;
         scene.environment = envMap;
         scene.background = envMap;
@@ -690,7 +666,6 @@ renderer.xr.addEventListener('sessionend', () => {
         pmremGenerator.dispose();
     });
     
-    // Işıklar (değişmedi)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
@@ -721,7 +696,6 @@ renderer.xr.addEventListener('sessionend', () => {
     dramaticLight.shadow.blurSamples = 16;
     scene.add(dramaticLight);
     
-    // GLTF Loader
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
     dracoLoader.setDecoderConfig({ type: 'js' });
@@ -729,7 +703,6 @@ renderer.xr.addEventListener('sessionend', () => {
     gltfLoader.setDRACOLoader(dracoLoader);
     gltfLoader.setMeshoptDecoder(MeshoptDecoder);
     
-    // Ana mekan GLB'sini yükle 
     const spaceUrl = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafkreiaiqlwqd7st7zpxfti7xnzkqvsfb7ql6aq4i7naz3tucs7ohn3tzu';
     let spaceBoundingBox = null;
     document.getElementById('loading').style.display = 'block';
@@ -746,11 +719,10 @@ renderer.xr.addEventListener('sessionend', () => {
             });
             scene.add(spaceModel);
             spaceBoundingBox = new THREE.Box3().setFromObject(spaceModel);
-            console.log('Mekan yüklendi!');
+            console.log('Space loaded!');
             document.getElementById('loading').style.display = 'none';
             backgroundImg.style.display = 'block';
             
-            // DEĞİŞTİ: Kontrol kurulumunu burada başlat
             bootShown = true;
             setupEnvironment(); 
         },
@@ -758,125 +730,120 @@ renderer.xr.addEventListener('sessionend', () => {
             document.getElementById('loading').textContent = `Loading: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`;
         },
         (error) => {
-            console.error('Mekan yükleme hatası:', error);
+            console.error('Error loading space:', error);
             document.getElementById('loading').textContent = 'Error: Failed to load space!';
         }
     );
 
- // Model URL'leri (değişmedi)
     const modelUrls = [
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/bellicapelli-1000-opt-v9.glb', // Model 1
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/matisse-1000-coms-opt-v4.glb', // Model 2
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/frued-human-1000-coms-opt-v16.glb', // Model 3
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baconscene-1000-coms-opt-v5.glb', // Model 4
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mutantbacon-1000-coms-opt-v27.glb', // Model 5
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/squallo-1000-opt-v37.glb', // Model 6
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/curator-10000-threejs-opt-v3.glb', // Model 7
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/joker-1000-opt-v19.glb', // Model 8
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/bulkgelin-1000-opt-v10.glb', // Model 9
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mare-1000-opt-v21.glb', // Model 10
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancedress-1000-opt-v23.glb', // Model 11
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/whitewearsdfw-1000-opt-v40.glb', // Model 12
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/invertmemelegancesuit-1000-opt-v18.glb', // Model 13
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/pile-1000-optopotooo-opt-v1.glb', // Model 14
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/redpunnnk-1000-opt-v1.glb', // Model 15
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancesuit-xoku-1000-opt-v25.glb', // Model 16
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/saturnweekend-900-v2-threejs-opt-v5.glb', // Model 17
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/6529memes-1000-opt-v1.glb', // Model 18
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/artdecc0-1000-opt-v3.glb', // Model 19
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/xcopy-1000--v2coms-opt-v6.glb', // Model 20
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/ailu-v2-1000-opt-v1.glb', // Model 21
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/gordon-1000-comms-opt-v17.glb', // Model 22
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/davicni-1000-opt-v13.glb', // Model 23
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/cozom-1000-c2-comms-opt-v2.glb', // Model 24
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/beeple-1000comms-opt-v8.glb', // Model 25
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/samspratt-1000-comms-opt-v34.glb', // Model 26
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/asiah-900-4SECS-threejs-opt-v3.glb', // Model 27
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baiencaigai-tigai-1000-opt-v6.glb', // Model 28
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/teddy-1000-opt-v39.glb', // Model 29
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/asian-1000-opt-v4.glb', // Model 30
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mafiaclown-1000-opt-v20.glb', // Model 31
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/samu-1000-opt-v35.glb', // Model 32
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baienciagai-1000-opt-v7.glb', // Model 33
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/rabbit-1000-opt-v32.glb', // Model 34
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/neo-1000-opt-v28.glb', // Model 35
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/psyclown-1000-opt-v31.glb', // Model 36
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/xeu2-900--v2-threejs-opt-v7.glb', // Model 37
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/papaz-1000-threejs-opt-v29.glb', // Model 38
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/sleekrobobitchspikey-1000-opt-v36.glb', // Model 39
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/donmac-1000-opt-v15.glb', // Model 40
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/redwearsdfw-1000-opt-v33.glb', // Model 41
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/cybergesu-1000-opt-v12.glb', // Model 42
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/steve-1000com-opt-v38.glb', // Model 43
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/millefeuille-dobby-1000coms-opt-v26.glb', // Model 44
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/junya-1000-opt-v42.glb', // Model 45
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/electrogod-1000-threejs-opt-v43.glb', // Model 46
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/davicni-1000-threejs-opt-v14.glb', // Model 47
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancesuit-1000-fup-opt-v24.glb', // Model 48
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/finale.glb' // Model 49
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeid6pgkot5ymcl2hs5gkrgpscy6a2246jspeubpermki6ilcmbjuwa',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeieenfxvydeklm73uxe2jqrzbh4br6xfbyjibkazldktzfacpkj47a',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicfthzz5fnjltfwqkzmdkuz6qfsgkjdcefvdqbiibvwm75drxlig4',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiafjhq4nyzfb6lqlnb54xoqdv3xcdujghz3opla7jfvryso3orsty',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibf65tpobzeux4h4w735tca7bskj3gtynecq63hixqazm47lep5ty',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeids4uvbwk6iqfivr3iyq5g4wzre4445divjo2h2h36biybz4mjuqm',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiewcb3irmym4q7hlk2yttd2iogq7hkgzkjledgghs2x3alxboe72m',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeia4rk3y67yrqlqs2a7qhugrudp5wvlnaeo2jskgmd6hnfbyz5p4cy',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihppb5zbln7zrllgf6gf7iqy3e6rvrjhuvethxhmjrxpqp63t7aai',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibnltdcsr6umcgr2d6z2plmrkbc56m4wh6yv5m2q34rcdtz6n6xfi',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihdmeumavufjr5kum2ld3ovec6kqczzldwbljjg76n7undwe6lspy',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiakdci7kxxfanzdwbjxs7cpxnpmtzmyfv2afynxbfh54fxq2wqrre',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiafzani65ovcr6gzmvhveifeugrlykxokrwn2o6tv3u4rdgxd7m4u',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeih6m66hgr6k5lyor5yypegxazzm2fszlfphm7bstsrckx2m7i3ioa',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiffvvdfehr6z3wrxcw4udnqi3wgqaj7rwkdes4qpudcfsc4eziuze',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiak4a5cm6jlcrq7iqpmrevcmwwryv25gclf2tqglchmzwdk6fohrq',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibte4nmibuxv5uqx2lovfp26jr2uemv26r5zcpwn3d4idig2qjjka',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidbwyeq7cog4uvwnnp2fd3upopot6qouwtbrd7hgwmxgybfqrwnbi',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibsddslftwuvkbouizshll3p5bfxqyyegwndoepprudiczyetlffe',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigaal3wgsgmksxrigam2kvkhwqifwzfjq7y7kbx2xm3g2tlbvf6am',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigxhew57zl42fxllritaue6k6cgjwkd3lmlp6eueepzazoejycyrm',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihu55krhgwqzpo34px3qabeie6alqshw2zeejtzedhnbph7tcxixy',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeieudp7uxpn23iktpsfrn2ufdhqhwi33njele75fempiyyyjcjnu3u',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigbf4k26zz4swm6ecqwsbs2y2owe4zdr7p5crwyyuj6brgpjcakw4',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihkl46mjcqb5fkkkz32mi3atfogc5wshta7sej5eew64pewtmp7jq',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiammavqdcjvgurcicxsmy6w5kz6zembt4mwf6maniqncys7zuzg7a',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeieshv5qx3sr2nuontqr3jhclhvvvhktjwqvvl44fuuee6dk2k4jby',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicop7xwbl454hdwyfkw45uf5uzawfznlwqssnz65m5ekr7r7iah7e',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifkoi6aklfypxsh5dpgygyqatcfoeiliiwb6sl2asavdjc2uaj6di',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihzxjy4rr5qdm2ckrvxobgrjtpnw3qyomrmdq3phno46jepiirnb4',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeih4pn3gy5dgwow6uol56iryqtq56rdyp7lsa7yevk2yb4rzq7wnom',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidx5cpnb34nnqseegybz2s52fwcoqjjkxhaafzut37yepuhdayeva',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiftu6vgi7gbnpqqlr3q25o4366hr64v4xxqsfxzy6ygmp36xwkrzi',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeic3b2swypqywb25cgwa2korjxmdsiqsen5dohyqyvhv65znucr7by',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiapjqb3zkujs3nrqhqvn2t352dj2ol6gj5sbr3va2i2nypl624zha',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeie76s34hxsyj7torfvekcd5gmqcch3tjh333remmlria23spatvj4',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiapgot3fkf7sj7su3wotlsg2f6eah43f326idpnixdfabacswposy',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigyw5iy3vxrolbq3i3srdzbvqra2cd533pfazcrkvk5z5niil6d6u',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiaa47rr3mra6a4dbsbkmwsf4qoha3wh4tmk2xhfpet7x5re5oiqge',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicbzw25d3ugkj3oy7wbw2ecjyuyfsnlfx6rhov6dvxbpk3myk2lf4',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifqzltksjcuiqstmqac6vkjyblqdf6fmnau3gvxufpdkmkuapdmty',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidogx4nitkys4mmpc5gjuydsymfuu5zget2h5sup6uelyjq2mhqea',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibkukid4kw45xu2cey4medweowqpcldlmp2e7nygubbmkuandgkaa',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifmqmlcvu4ziols47xyadp6u4amnn7pfpp44z5uxkzkled2pg6dui',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiangzr4ilgrqnzwnujnbe7sw3ib4c3y5wcpqrgkmbcfu4dyjqdrle',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicnn4vqucgf2apnfa2svuwds3qkylscsk4yvvgjmymbbg23oxot34',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeielhjr6mmo4trvfv6g63clfzk25psugortaxeiilpeqhcu6fe463e',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifzht27ut4byrffprzis4ky3suir6dso4wwobsbmm7u74v2647cjq',
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiddnb6sumfkvr4xt3hra3d7lohpnqflmt65vsmdgn6fgnbf5736vy',
     ];
-
-    // Model açıklamaları (değişmedi)
     const modelDescriptions = [
-        'Model 1: Bellicapelli, a stylish and elegant design.', // Model 1
-        'Model 2: Matisse Purple, vibrant and artistic.', // Model 2
-        'Model 3: Bacon-Freud, inspired by surrealist art.', // Model 3
-        'Model 4: Bacon Scene, a dynamic visual composition.', // Model 4
-        'Model 5: Mutant Bacon, a bold and unconventional piece.', // Model 5
-        'Model 6: Squallo, sleek and modern aesthetic.', // Model 6
-        'Model 7: Curator, a refined and sophisticated model.', // Model 7
-        'Model 8: Joker, chaotic and expressive design.', // Model 8
-        'Model 9: Bulkgelin, intricate and detailed.', // Model 9
-        'Model 10: Mare, serene and flowing visuals.', // Model 10
-        'Model 11: Memelegance Dress, chic and trendy.', // Model 11
-        'Model 12: White Wears DFW, minimalist elegance.', // Model 12
-        'Model 13: Invert Memelegance Suit, a bold twist.', // Model 13
-        'Model 14: Pile, textured and layered design.', // Model 14
-        'Model 15: Red Punk, vibrant and rebellious.', // Model 15
-        'Model 16: Memelegance Suit, sharp and stylish.', // Model 16
-        'Model 17: Saturn Weekend, cosmic and futuristic.', // Model 17
-        'Model 18: 6529 Memes, playful and animated.', // Model 18
-        'Model 19: Art Deco, classic and ornate.', // Model 19
-        'Model 20: XCopy, bold digital art vibes.', // Model 20
-        'Model 21: C2W2 Rich Ailu Scene, luxurious and detailed.', // Model 21
-        'Model 22: Gooner, edgy and modern.', // Model 22
-        'Model 23: Davicni, inspired by classical art.', // Model 23
-        'Model 24: Cozom, vibrant and colorful.', // Model 24
-        'Model 25: Beeple, futuristic and digital.', // Model 25
-        'Model 26: Samsprat, whimsical and creative.', // Model 26
-        'Model 27: Asiah, culturally rich design.', // Model 27
-        'Model 28: Chrome Tiger, sleek and powerful.', // Model 28
-        'Model 29: Teddyminator, playful yet bold.', // Model 29
-        'Model 30: Asian, elegant and traditional.', // Model 30
-        'Model 31: Mafia Clown, quirky and intense.', // Model 31
-        'Model 32: Samu, inspired by samurai aesthetics.', // Model 32
-        'Model 33: Baiencaigai, vibrant and eclectic.', // Model 33
-        'Model 34: C-Rabbit, cute yet dynamic.', // Model 34
-        'Model 35: Neo, futuristic and sleek.', // Model 35
-        'Model 36: Psy Clown, psychedelic and bold.', // Model 36
-        'Model 37: Xeu2, experimental and modern.', // Model 37
-        'Model 38: Papaz, ornate and ceremonial.', // Model 38
-        'Model 39: Sleek Robo Bitch Spikey, cyberpunk edge.', // Model 39
-        'Model 40: Donmac, classic and refined.', // Model 40
-        'Model 41: Red Wears DFW, bold and striking.', // Model 41
-        'Model 42: Cybergesu, futuristic and spiritual.', // Model 42
-        'Model 43: Steve, modern and minimal.', // Model 43
-        'Model 44: Millefeuille Dobby, layered and intricate.', // Model 44
-        'Model 45: Junya, avant-garde fashion.', // Model 45
-        'Model 46: Electrogod, electrifying and bold.', // Model 46
-        'Model 47: Davicni, artistic and classical.', // Model 47
-        'Model 48: Curator, elegant and curated.', // Model 48
-        'Model 49: Memelegance Suit FUP, stylish and modern.' // Model 49
+        'Model 1: Bellicapelli, a stylish and elegant design.',
+        'Model 2: Matisse Purple, vibrant and artistic.',
+        'Model 3: Bacon-Freud, inspired by surrealist art.',
+        'Model 4: Bacon Scene, a dynamic visual composition.',
+        'Model 5: Mutant Bacon, a bold and unconventional piece.',
+        'Model 6: Squallo, sleek and modern aesthetic.',
+        'Model 7: Curator, a refined and sophisticated model.',
+        'Model 8: Joker, chaotic and expressive design.',
+        'Model 9: Bulkgelin, intricate and detailed.',
+        'Model 10: Mare, serene and flowing visuals.',
+        'Model 11: Memelegance Dress, chic and trendy.',
+        'Model 12: White Wears DFW, minimalist elegance.',
+        'Model 13: Invert Memelegance Suit, a bold twist.',
+        'Model 14: Pile, textured and layered design.',
+        'Model 15: Red Punk, vibrant and rebellious.',
+        'Model 16: Memelegance Suit, sharp and stylish.',
+        'Model 17: Saturn Weekend, cosmic and futuristic.',
+        'Model 18: 6529 Memes, playful and animated.',
+        'Model 19: Art Deco, classic and ornate.',
+        'Model 20: XCopy, bold digital art vibes.',
+        'Model 21: C2W2 Rich Ailu Scene, luxurious and detailed.',
+        'Model 22: Gooner, edgy and modern.',
+        'Model 23: Davicni, inspired by classical art.',
+        'Model 24: Cozom, vibrant and colorful.',
+        'Model 25: Beeple, futuristic and digital.',
+        'Model 26: Samsprat, whimsical and creative.',
+        'Model 27: Asiah, culturally rich design.',
+        'Model 28: Chrome Tiger, sleek and powerful.',
+        'Model 29: Teddyminator, playful yet bold.',
+        'Model 30: Asian, elegant and traditional.',
+        'Model 31: Mafia Clown, quirky and intense.',
+        'Model 32: Samu, inspired by samurai aesthetics.',
+        'Model 33: Baiencaigai, vibrant and eclectic.',
+        'Model 34: C-Rabbit, cute yet dynamic.',
+        'Model 35: Neo, futuristic and sleek.',
+        'Model 36: Psy Clown, psychedelic and bold.',
+        'Model 37: Xeu2, experimental and modern.',
+        'Model 38: Papaz, ornate and ceremonial.',
+        'Model 39: Sleek Robo Bitch Spikey, cyberpunk edge.',
+        'Model 40: Donmac, classic and refined.',
+        'Model 41: Red Wears DFW, bold and striking.',
+        'Model 42: Cybergesu, futuristic and spiritual.',
+        'Model 43: Steve, modern and minimal.',
+        'Model 44: Millefeuille Dobby, layered and intricate.',
+        'Model 45: Junya, avant-garde fashion.',
+        'Model 46: Electrogod, electrifying and bold.',
+        'Model 47: Davicni, artistic and classical.',
+        'Model 48: Curator, elegant and curated.',
+        'Model 49: Memelegance Suit FUP, stylish and modern.'
     ];
     const models = [];
     
-    // Raycaster for clicking and hovering
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let clickableObject = null;
     
     function onMouseMove(event) {
-        // DEĞİŞTİ: VR'da mouse move yok, sadece desktop'ta
         if (controls && controls.isLocked) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -894,7 +861,6 @@ renderer.xr.addEventListener('sessionend', () => {
     }
     
     function onMouseClick(event) {
-        // DEĞİŞTİ: VR'da mouse click yok
         if (vrControlsActive) return; 
         
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -911,7 +877,6 @@ renderer.xr.addEventListener('sessionend', () => {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('click', onMouseClick);
     
-    // Model yükleme ve animasyon fonksiyonları (değişmedi)
     function loadModel(index) {
         return new Promise((resolve, reject) => {
             gltfLoader.load(
@@ -943,12 +908,12 @@ renderer.xr.addEventListener('sessionend', () => {
                         });
                     }
                     models[index] = { model: modelScene, mixer, animated: false };
-                    console.log(`Model ${index} yüklendi (animasyonsuz)`);
+                    console.log(`Model ${index} loaded (no animation)`);
                     resolve();
                 },
                 undefined,
                 (error) => {
-                    console.error(`Model ${index} yükleme hatası:`, error);
+                    console.error(`Error loading model ${index}:`, error);
                     reject(error);
                 }
             );
@@ -965,11 +930,11 @@ renderer.xr.addEventListener('sessionend', () => {
                 action.reset();
                 action.play();
             });
-            console.log(`Model ${index} animasyonu tetiklendi (loop'ta)`);
+            console.log(`Model ${index} animation triggered (loop)`);
             document.getElementById('description').textContent = modelDescriptions[index - 1];
             document.getElementById('description').style.display = 'block';
         } else {
-            console.log(`Model ${index} için animasyon yok veya mixer hazır değil`);
+            console.log(`No animation or mixer ready for model ${index}`);
         }
     }
     function deleteModel(index) {
@@ -984,7 +949,7 @@ renderer.xr.addEventListener('sessionend', () => {
                 }
             });
             models[index] = null;
-            console.log(`Model ${index} silindi`);
+            console.log(`Model ${index} deleted`);
             document.getElementById('description').style.display = 'none';
             if (index === 49) {
                 clickableObject = null;
@@ -995,12 +960,6 @@ renderer.xr.addEventListener('sessionend', () => {
         return new Promise(resolve => setTimeout(resolve, seconds * 1000));
     }
 
-
-
-
-
-
-    // Ses fonksiyonları (değişmedi)
     const audioLoader = new THREE.AudioLoader();
     let sound1Buffer, sound2Buffer, sound3Buffer, sound4Buffer, sound5Buffer, sound6Buffer, introSoundBuffer;
     let sound1, sound2, sound3, sound4, sound5, sound6, introSound;
@@ -1011,16 +970,16 @@ const soundUrl4 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/b
 const soundUrl5 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihnvpbu73plc232acthimujvnd2f5jdhmdscgtdgdpgnyxvauoqea';
 const soundUrl6 = 'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiggoxbncl3pk5pqjjbqtwoi7tv57xglketlqjyephutrtptt5mkum';
 const introSoundUrl = null;
-    audioLoader.load(soundUrl1, (buffer) => { sound1Buffer = buffer; console.log('Sound 1 buffer yüklendi'); });
-    audioLoader.load(soundUrl2, (buffer) => { sound2Buffer = buffer; console.log('Sound 2 buffer yüklendi'); });
-    audioLoader.load(soundUrl3, (buffer) => { sound3Buffer = buffer; console.log('Sound 3 buffer yüklendi'); });
-    audioLoader.load(soundUrl4, (buffer) => { sound4Buffer = buffer; console.log('Sound 4 buffer yüklendi'); });
-    audioLoader.load(soundUrl5, (buffer) => { sound5Buffer = buffer; console.log('Sound 5 buffer yüklendi'); });
-    audioLoader.load(soundUrl6, (buffer) => { sound6Buffer = buffer; console.log('Sound 6 buffer yüklendi'); });
+    audioLoader.load(soundUrl1, (buffer) => { sound1Buffer = buffer; console.log('Sound 1 buffer loaded'); });
+    audioLoader.load(soundUrl2, (buffer) => { sound2Buffer = buffer; console.log('Sound 2 buffer loaded'); });
+    audioLoader.load(soundUrl3, (buffer) => { sound3Buffer = buffer; console.log('Sound 3 buffer loaded'); });
+    audioLoader.load(soundUrl4, (buffer) => { sound4Buffer = buffer; console.log('Sound 4 buffer loaded'); });
+    audioLoader.load(soundUrl5, (buffer) => { sound5Buffer = buffer; console.log('Sound 5 buffer loaded'); });
+    audioLoader.load(soundUrl6, (buffer) => { sound6Buffer = buffer; console.log('Sound 6 buffer loaded'); });
     audioLoader.load(introSoundUrl, (buffer) => { 
     introSoundBuffer = buffer; 
-    console.log('Intro sound buffer yüklendi'); 
-    if (!vrControlsActive) { // Yalnızca VR dışı (desktop) modda çal
+    console.log('Intro sound buffer loaded'); 
+    if (!vrControlsActive) { 
         playIntroSound(); 
     }
 });
@@ -1049,7 +1008,6 @@ if (introSoundBuffer) {
 }
     function fadeOutIntroSound() {
         if (introSound && introSound.isPlaying) { 
-            // 4 saniyede fade out (echo için reverb eklenmedi, basit fade)
             const currentTime = audioListener.context.currentTime;
             introSound.gain.gain.linearRampToValueAtTime(0, currentTime + 4);
             setTimeout(() => {
@@ -1204,33 +1162,31 @@ if (sound6Buffer) {
 
 
     function stopSound1() {
-        if (sound1 && sound1.isPlaying) { sound1.stop(); console.log('Sound 1 stop edildi'); }
+        if (sound1 && sound1.isPlaying) { sound1.stop(); console.log('Sound 1 stopped'); }
     }
     function stopSound2() {
-        if (sound2 && sound2.isPlaying) { sound2.stop(); console.log('Sound 2 stop edildi'); }
+        if (sound2 && sound2.isPlaying) { sound2.stop(); console.log('Sound 2 stopped'); }
     }
     function stopSound3() {
-        if (sound3 && sound3.isPlaying) { sound3.stop(); console.log('Sound 3 stop edildi'); }
+        if (sound3 && sound3.isPlaying) { sound3.stop(); console.log('Sound 3 stopped'); }
     }
     function stopSound4() {
-        if (sound4 && sound4.isPlaying) { sound4.stop(); console.log('Sound 4 stop edildi'); }
+        if (sound4 && sound4.isPlaying) { sound4.stop(); console.log('Sound 4 stopped'); }
     }
     function stopSound5() {
-        if (sound5 && sound5.isPlaying) { sound5.stop(); console.log('Sound 5 stop edildi'); }
+        if (sound5 && sound5.isPlaying) { sound5.stop(); console.log('Sound 5 stopped'); }
     }
     function stopSound6() {
-        if (sound6 && sound6.isPlaying) { sound6.stop(); console.log('Sound 6 stop edildi'); }
+        if (sound6 && sound6.isPlaying) { sound6.stop(); console.log('Sound 6 stopped'); }
     }
     
 
-
-    // Animasyon Sekansı (değişmedi, sadece VR'da 5sn sonra, Desktop'ta start tuşu ile tetiklenir)
     async function runSequence() {
-        experienceRunning = true; // Experience başladı
+        experienceRunning = true;
         document.getElementById('initiating').style.display = 'block';
         try {
             await loadModel(1);
-            await wait(vrControlsActive ? 10 : 5); // VR'da 10 saniye, desktop'ta 5 saniye
+            await wait(vrControlsActive ? 10 : 5);
             document.getElementById('initiating').style.display = 'none';
             animateModel(1);
             playSound1();
@@ -1271,7 +1227,6 @@ if (sound6Buffer) {
             stopSound1();
             playSound2();
             
-             //section2
             animateModel(8);
             await wait(15);
             await loadModel(9);
@@ -1285,22 +1240,22 @@ if (sound6Buffer) {
             animateModel(10);
             await wait(15);
             await loadModel(11);
-            await wait(13.9); 
+            await wait(13.9);
             deleteModel(10);
             animateModel(11);
             await wait(15);
             await loadModel(12);
-            await wait(14.5); 
+            await wait(14.5);
             deleteModel(11);
             animateModel(12);
             await wait(15);
             await loadModel(13);
-            await wait(14); 
+            await wait(14);
             deleteModel(12);
             animateModel(13);
             await wait(15);
             await loadModel(14);
-            await wait(13.9); 
+            await wait(13.9);
             deleteModel(13);
             animateModel(14);
             await wait(15);
@@ -1319,15 +1274,13 @@ if (sound6Buffer) {
             deleteModel(16);
             animateModel(17);
             await wait(15);
-            await loadModel(18); 
-            await wait(18); //19
+            await loadModel(18);
+            await wait(18);
             deleteModel(17);
             stopSound2();
-            //end of section 2
-            //start of section 3
             playSound3();
             
-           animateModel(18);
+            animateModel(18);
             await wait(15);
             await loadModel(19);
             await wait(14.5);
@@ -1335,27 +1288,27 @@ if (sound6Buffer) {
             animateModel(19);
             await wait(15);
             await loadModel(20);
-            await wait(14.5); // 
+            await wait(14.5);
             deleteModel(19);
             animateModel(20);
             await wait(15);
             await loadModel(21);
-            await wait(14.3); // panda boss geliyor
+            await wait(14.3);
             deleteModel(20);
-            animateModel(21); 
+            animateModel(21);
             await wait(15);
             await loadModel(22);
             await wait(14.5);
             deleteModel(21);
-            animateModel(22); //gordon
+            animateModel(22);
             await wait(15);
             await loadModel(23);
             await wait(14.2);
             deleteModel(22);
-            animateModel(23); 
+            animateModel(23);
             await wait(15);
             await loadModel(24);
-            await wait(14.5); //14.8 mi acana cozom öncesi
+            await wait(14.5);
             deleteModel(23);
             animateModel(24);
             await wait(15);
@@ -1367,7 +1320,7 @@ if (sound6Buffer) {
             await loadModel(26);
             await wait(14.5);
             deleteModel(25);
-            animateModel(26); 
+            animateModel(26);
             await wait(15);
             await loadModel(27);
             await wait(13.8);
@@ -1375,8 +1328,7 @@ if (sound6Buffer) {
             animateModel(27);
             await wait(15);
             await loadModel(28);
-            await wait(18); // 19
-
+            await wait(18);
             deleteModel(27);
             stopSound3();
             playSound4();
@@ -1387,27 +1339,27 @@ if (sound6Buffer) {
             await loadModel(29);
             await wait(14.5);
             deleteModel(28);
-            animateModel(29); 
+            animateModel(29);
             await wait(15);
             await loadModel(30);
             await wait(14.7);
             deleteModel(29);
-            animateModel(30); 
+            animateModel(30);
             await wait(15);
             await loadModel(31);
-            await wait(15.2);  //editts
+            await wait(15.2);
             deleteModel(30);
-            animateModel(31); //mafyaclown
+            animateModel(31);
             await wait(15);
-            await loadModel(32); 
+            await loadModel(32);
             await wait(15);
             deleteModel(31);
-            animateModel(32); //samu
+            animateModel(32);
             await wait(15);
-            await loadModel(33); 
-            await wait(15); 
+            await loadModel(33);
+            await wait(15);
             deleteModel(32);
-            animateModel(33); // çok güzeel buraya kdars
+            animateModel(33);
             await wait(15);
             await loadModel(34);
             await wait(15.3);
@@ -1430,47 +1382,46 @@ if (sound6Buffer) {
             animateModel(37);
             await wait(15);
             await loadModel(38);
-            await wait(18); // 20
-
+            await wait(18);
             deleteModel(37);
             stopSound4();
 
             playSound5();
             
             animateModel(38);
-            await wait(17); 
+            await wait(17);
             await loadModel(39);
             await wait(13.95);
             deleteModel(38);
-            animateModel(39); 
+            animateModel(39);
             await wait(14.6);
             await loadModel(40);
-            await wait(15); 
+            await wait(15);
             deleteModel(39);
             animateModel(40);
             await wait(15);
             await loadModel(41);
             await wait(14.5);
             deleteModel(40);
-            animateModel(41); // güzeliz
+            animateModel(41);
             await wait(15);
             await loadModel(42);
             await wait(14.7);
             deleteModel(41);
-            animateModel(42); 
+            animateModel(42);
             await wait(15);
             await loadModel(43);
-            await wait(14.3); 
+            await wait(14.3);
             deleteModel(42);
-            animateModel(43); 
+            animateModel(43);
             await wait(15);
             await loadModel(44);
-            await wait(14.4); 
+            await wait(14.4);
             deleteModel(43);
             animateModel(44);
             await wait(15);
             await loadModel(45);
-            await wait(14.7); // burdayız.
+            await wait(14.7);
             deleteModel(44);
             animateModel(45);
             await wait(15);
@@ -1480,12 +1431,10 @@ if (sound6Buffer) {
             animateModel(46);
             await wait(15);
             await loadModel(47);
-            await wait(15); // 16
-
+            await wait(15);
             deleteModel(46);
             stopSound5();
 
-            
             playSound6();
             
             
@@ -1494,20 +1443,20 @@ if (sound6Buffer) {
             await loadModel(7);
             await wait(14.5);
             deleteModel(47);
-            animateModel(7); 
+            animateModel(7);
             await wait(15);
             await loadModel(14);
-            await wait(13.7); 
+            await wait(13.7);
             deleteModel(7);
-            animateModel(14);  
+            animateModel(14);
             await wait(15);
             await loadModel(18);
             await wait(14);
             deleteModel(14);
-            animateModel(18); // güzeliz
+            animateModel(18);
             await wait(15);
             await loadModel(48);
-            await wait(14.4); //brudayız
+            await wait(14.4);
             deleteModel(18);
             animateModel(48);
             await wait(15);
@@ -1530,31 +1479,31 @@ if (sound6Buffer) {
 
 
         } catch (error) {
-            console.error(`Sekans hatası at model ${models.length || 'unknown'}:`, error);
+            console.error(`Sequence error at model ${models.length || 'unknown'}:`, error);
         } finally {
             document.getElementById('initiating').style.display = 'none';
             document.getElementById('ended').style.display = 'block';
             await wait(3);
             document.getElementById('ended').style.display = 'none';
-            // DEĞİŞTİ: VR'da 'Start' tuşu yok, o yüzden sadece desktop'ta göster
             if (!vrControlsActive) {
                 document.getElementById('startButton').style.display = 'block';
             }
-            experienceRunning = false; // Experience bitti
+            experienceRunning = false;
         }
     }
     
-    // Start button click event (Sadece desktop'ta çalışır)
     const startButton = document.getElementById('startButton');
     startButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        fadeOutIntroSound(); // Sorun 1 fix: Fade out intro sound
+        fadeOutIntroSound();
         runSequence();
         startButton.style.display = 'none';
     });
 
 const openInNewTabButton = document.getElementById('openInNewTab');
-openInNewTabButton.style.display = 'block';
+if (isInIframe) {
+    openInNewTabButton.style.display = 'block';
+}
 openInNewTabButton.addEventListener('click', (event) => {
     event.stopPropagation();
     stopInIframe = true;
@@ -1573,23 +1522,22 @@ openInNewTabButton.addEventListener('click', (event) => {
     if (sound6 && sound6.isPlaying) sound6.stop();
     document.getElementById('description').style.display = 'none';
     document.getElementById('ended').style.display = 'block';
-    window.open('https://opensea.io/collection/c2w2', '_blank');
+    window.open(window.location.href, '_blank');
 });
 
-    // Full screen button and key (VR'da gizlendi)
     const fullscreenButton = document.getElementById('fullscreenButton');
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().then(() => {
                 fullscreenButton.textContent = 'Exit Fullscreen';
             }).catch(err => {
-                console.error('Full screen hatası:', err);
+                console.error('Full screen error:', err);
             });
         } else {
             document.exitFullscreen().then(() => {
                 fullscreenButton.textContent = 'Full Screen';
             }).catch(err => {
-                console.error('Exit full screen hatası:', err);
+                console.error('Exit full screen error:', err);
             });
         }
     }
@@ -1598,7 +1546,7 @@ openInNewTabButton.addEventListener('click', (event) => {
         toggleFullscreen();
     });
     document.addEventListener('keydown', (event) => {
-        if (vrControlsActive) return; // VR'da F tuşunu yoksay
+        if (vrControlsActive) return;
         if (event.key === 'f' || event.key === 'F') {
             toggleFullscreen();
         }
@@ -1611,7 +1559,6 @@ openInNewTabButton.addEventListener('click', (event) => {
         }
     });
     
-    // Info panel butonları (VR'da gizlendi)
     const projectInfoButton = document.getElementById('projectInfoButton');
     const projectInfoPanel = document.getElementById('projectInfoPanel');
     const closeButton = document.getElementById('closeButton');
@@ -1724,14 +1671,13 @@ openInNewTabButton.addEventListener('click', (event) => {
         event.stopPropagation();
     });
 
-    // Kamera başlangıç pozisyonu (Desktop için)
     camera.position.set(15, 1.8, 0);
     camera.lookAt(0, 0, 0);
 
     const clock = new THREE.Clock();
     
    
- function animate() {
+    function animate() {
     const delta = clock.getDelta();
     const time = performance.now();
     const physicsDelta = (time - prevTime) / 1000;
@@ -1842,19 +1788,15 @@ openInNewTabButton.addEventListener('click', (event) => {
         composer.render();
     }
 }
-    
+
     window.onload = () => {
-    isExperienceRunning = false;
-    stopInIframe = false;
-    autoCameraTime = 0;
-    // Mevcut modelleri temizle
-    models.forEach((entry, index) => {
-        if (entry) deleteModel(index);
-    });
-};
+        isExperienceRunning = false;
+        stopInIframe = false;
+        models.forEach((entry, index) => {
+            if (entry) deleteModel(index);
+        });
+    };
 
-
-    // DEĞİŞTİ: animate() yerine setAnimationLoop kullan
     renderer.setAnimationLoop(animate);
     
     window.addEventListener('resize', () => {
@@ -1864,7 +1806,5 @@ openInNewTabButton.addEventListener('click', (event) => {
         composer.setSize(window.innerWidth, window.innerHeight);
     });
 </script>
-    
-    
 </body>
 </html>
