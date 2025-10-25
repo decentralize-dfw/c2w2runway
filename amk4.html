@@ -746,56 +746,57 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     );
 
     const modelUrls = [
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/bellicapelli-1000-opt-v9.glb', // Model 1
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/matisse-1000-coms-opt-v4.glb', // Model 2
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/frued-human-1000-coms-opt-v16.glb', // Model 3
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baconscene-1000-coms-opt-v5.glb', // Model 4
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mutantbacon-1000-coms-opt-v27.glb', // Model 5
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/squallo-1000-opt-v37.glb', // Model 6
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/curator-10000-threejs-opt-v3.glb', // Model 7
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/joker-1000-opt-v19.glb', // Model 8
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/bulkgelin-1000-opt-v10.glb', // Model 9
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mare-1000-opt-v21.glb', // Model 10
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancedress-1000-opt-v23.glb', // Model 11
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/whitewearsdfw-1000-opt-v40.glb', // Model 12
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/invertmemelegancesuit-1000-opt-v18.glb', // Model 13
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/pile-1000-optopotooo-opt-v1.glb', // Model 14
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/redpunnnk-1000-opt-v1.glb', // Model 15
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancesuit-xoku-1000-opt-v25.glb', // Model 16
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/saturnweekend-900-v2-threejs-opt-v5.glb', // Model 17
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/6529memes-1000-opt-v1.glb', // Model 18
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/artdecc0-1000-opt-v3.glb', // Model 19
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/xcopy-1000--v2coms-opt-v6.glb', // Model 20
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/ailu-v2-1000-opt-v1.glb', // Model 21
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/gordon-1000-comms-opt-v17.glb', // Model 22
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/davicni-1000-opt-v13.glb', // Model 23
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/cozom-1000-c2-comms-opt-v2.glb', // Model 24
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/beeple-1000comms-opt-v8.glb', // Model 25
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/samspratt-1000-comms-opt-v34.glb', // Model 26
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/asiah-900-4SECS-threejs-opt-v3.glb', // Model 27
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baiencaigai-tigai-1000-opt-v6.glb', // Model 28
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/teddy-1000-opt-v39.glb', // Model 29
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/asian-1000-opt-v4.glb', // Model 30
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/mafiaclown-1000-opt-v20.glb', // Model 31
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/samu-1000-opt-v35.glb', // Model 32
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/baienciagai-1000-opt-v7.glb', // Model 33
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/rabbit-1000-opt-v32.glb', // Model 34
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/neo-1000-opt-v28.glb', // Model 35
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/psyclown-1000-opt-v31.glb', // Model 36
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/xeu2-900--v2-threejs-opt-v7.glb', // Model 37
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/papaz-1000-threejs-opt-v29.glb', // Model 38
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/sleekrobobitchspikey-1000-opt-v36.glb', // Model 39
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/donmac-1000-opt-v15.glb', // Model 40
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/redwearsdfw-1000-opt-v33.glb', // Model 41
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/cybergesu-1000-opt-v12.glb', // Model 42
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/steve-1000com-opt-v38.glb', // Model 43
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/millefeuille-dobby-1000coms-opt-v26.glb', // Model 44
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/junya-1000-opt-v42.glb', // Model 45
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/electrogod-1000-threejs-opt-v43.glb', // Model 46
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/davicni-1000-threejs-opt-v14.glb', // Model 47
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/memelegancesuit-1000-fup-opt-v24.glb', // Model 48
-        'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/finale.glb' // Model 49
-    ];
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeid6pgkot5ymcl2hs5gkrgpscy6a2246jspeubpermki6ilcmbjuwa', // Model 1 - 1-Belli_Capelli_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeieenfxvydeklm73uxe2jqrzbh4br6xfbyjibkazldktzfacpkj47a', // Model 2 - 2-Lydia_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicfthzz5fnjltfwqkzmdkuz6qfsgkjdcefvdqbiibvwm75drxlig4', // Model 3 - 3-Lucien_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiafjhq4nyzfb6lqlnb54xoqdv3xcdujghz3opla7jfvryso3orsty', // Model 4 - 4-The_Wrestler_of_Silence_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibf65tpobzeux4h4w735tca7bskj3gtynecq63hixqazm47lep5ty', // Model 5 - 5-The_Devoured_Remnant_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeids4uvbwk6iqfivr3iyq5g4wzre4445divjo2h2h36biybz4mjuqm', // Model 6 - 6-Squallor_Shark_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiewcb3irmym4q7hlk2yttd2iogq7hkgzkjledgghs2x3alxboe72m', // Model 7 - 7-Neue2Dojo_Curator_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeia4rk3y67yrqlqs2a7qhugrudp5wvlnaeo2jskgmd6hnfbyz5p4cy', // Model 8 - 8-Joker_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihppb5zbln7zrllgf6gf7iqy3e6rvrjhuvethxhmjrxpqp63t7aai', // Model 9 - 9-Bulky_Bride_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibnltdcsr6umcgr2d6z2plmrkbc56m4wh6yv5m2q34rcdtz6n6xfi', // Model 10 - 10-Mare_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihdmeumavufjr5kum2ld3ovec6kqczzldwbljjg76n7undwe6lspy', // Model 11 - 11-Vertical_CT_Feed_Person_RW1000 WARNING DRACO - OPTIMIZE MORE
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiakdci7kxxfanzdwbjxs7cpxnpmtzmyfv2afynxbfh54fxq2wqrre', // Model 12 - 12-Astral_Kindergarten_Teacher_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiafzani65ovcr6gzmvhveifeugrlykxokrwn2o6tv3u4rdgxd7m4u', // Model 13 - 13-Invert_Smiley_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeih6m66hgr6k5lyor5yypegxazzm2fszlfphm7bstsrckx2m7i3ioa', // Model 14 - 14-Private_Pile_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiffvvdfehr6z3wrxcw4udnqi3wgqaj7rwkdes4qpudcfsc4eziuze', // Model 15 - 15-Uncle_Red_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiak4a5cm6jlcrq7iqpmrevcmwwryv25gclf2tqglchmzwdk6fohrq', // Model 16 - 16-Xoku_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibte4nmibuxv5uqx2lovfp26jr2uemv26r5zcpwn3d4idig2qjjka', // Model 17 - 17-Weekend_@_Saturn_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidbwyeq7cog4uvwnnp2fd3upopot6qouwtbrd7hgwmxgybfqrwnbi', // Model 18 - 18-Seize_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibsddslftwuvkbouizshll3p5bfxqyyegwndoepprudiczyetlffe', // Model 19 - 19-Midemoiselle_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigaal3wgsgmksxrigam2kvkhwqifwzfjq7y7kbx2xm3g2tlbvf6am', // Model 20 - 20-Ferryman_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigxhew57zl42fxllritaue6k6cgjwkd3lmlp6eueepzazoejycyrm', // Model 21 - 21-Panda_Boss_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihu55krhgwqzpo34px3qabeie6alqshw2zeejtzedhnbph7tcxixy', // Model 22 - 22-Founder_Ape_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeieudp7uxpn23iktpsfrn2ufdhqhwi33njele75fempiyyyjcjnu3u', // Model 23 - 23-Davicni_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigbf4k26zz4swm6ecqwsbs2y2owe4zdr7p5crwyyuj6brgpjcakw4', // Model 24 - 24-Chromozom_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihkl46mjcqb5fkkkz32mi3atfogc5wshta7sej5eew64pewtmp7jq', // Model 25 - 25-Can't_See_Beep_Bop_Crap_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiammavqdcjvgurcicxsmy6w5kz6zembt4mwf6maniqncys7zuzg7a', // Model 26 - 26-Bone_on_Air_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeieshv5qx3sr2nuontqr3jhclhvvvhktjwqvvl44fuuee6dk2k4jby', // Model 27 - 27-Ashium_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicop7xwbl454hdwyfkw45uf5uzawfznlwqssnz65m5ekr7r7iah7e', // Model 28 - 28-RR-Tiger_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifkoi6aklfypxsh5dpgygyqatcfoeiliiwb6sl2asavdjc2uaj6di', // Model 29 - 29-Teddyminator_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeihzxjy4rr5qdm2ckrvxobgrjtpnw3qyomrmdq3phno46jepiirnb4', // Model 30 - 30-Bad_Luck_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeih4pn3gy5dgwow6uol56iryqtq56rdyp7lsa7yevk2yb4rzq7wnom', // Model 31 - 31-Mayhem_Clown_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidx5cpnb34nnqseegybz2s52fwcoqjjkxhaafzut37yepuhdayeva', // Model 32 - 32-Samu_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiftu6vgi7gbnpqqlr3q25o4366hr64v4xxqsfxzy6ygmp36xwkrzi', // Model 33 - 33-Baincaigai_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeic3b2swypqywb25cgwa2korjxmdsiqsen5dohyqyvhv65znucr7by', // Model 34 - 34-exBunny_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiapjqb3zkujs3nrqhqvn2t352dj2ol6gj5sbr3va2i2nypl624zha', // Model 35 - 35-Thomas_DT_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeie76s34hxsyj7torfvekcd5gmqcch3tjh333remmlria23spatvj4', // Model 36 - 36-Bobo_Delirium_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiapgot3fkf7sj7su3wotlsg2f6eah43f326idpnixdfabacswposy', // Model 37 - 37-Xeu2_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeigyw5iy3vxrolbq3i3srdzbvqra2cd533pfazcrkvk5z5niil6d6u', // Model 38 - 38-Ya_Bish_Opps_c2-RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiaa47rr3mra6a4dbsbkmwsf4qoha3wh4tmk2xhfpet7x5re5oiqge', // Model 39 - 39-sleekrobobİtch-SPIKES_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicbzw25d3ugkj3oy7wbw2ecjyuyfsnlfx6rhov6dvxbpk3myk2lf4', // Model 40 - 40-Don_Mac_Don_v2-RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifqzltksjcuiqstmqac6vkjyblqdf6fmnau3gvxufpdkmkuapdmty', // Model 41 - 41-Call_2_Sim_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeidogx4nitkys4mmpc5gjuydsymfuu5zget2h5sup6uelyjq2mhqea', // Model 42 - 42-CYB0RG-E-xyz_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeibkukid4kw45xu2cey4medweowqpcldlmp2e7nygubbmkuandgkaa', // Model 43 - 43-Steroive_iObs_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifmqmlcvu4ziols47xyadp6u4amnn7pfpp44z5uxkzkled2pg6dui', // Model 44 - 44-Tobby_Millefuille_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiangzr4ilgrqnzwnujnbe7sw3ib4c3y5wcpqrgkmbcfu4dyjqdrle', // Model 45 - 45-Junya_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeicnn4vqucgf2apnfa2svuwds3qkylscsk4yvvgjmymbbg23oxot34', // Model 46 - 46-Elextrogxd_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeielhjr6mmo4trvfv6g63clfzk25psugortaxeiilpeqhcu6fe463e', // Model 47 - 47-Davicni_2_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeifzht27ut4byrffprzis4ky3suir6dso4wwobsbmm7u74v2647cjq', // Model 48 - 48-48-Xoqou-v2-_RW1000
+    'https://magenta-elaborate-galliform-894.mypinata.cloud/ipfs/bafybeiddnb6sumfkvr4xt3hra3d7lohpnqflmt65vsmdgn6fgnbf5736vy', // Model 49 - 49-Finale_unOpt_RW1000
+];
+   
     const modelDescriptions = [
         'Model 1: Bellicapelli, a stylish and elegant design.',
         'Model 2: Matisse Purple, vibrant and artistic.',
