@@ -261,8 +261,8 @@
     <div id="initiating" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 400; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Initializing...</div>
     <div id="ended" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 12px 12px; color: #fff; font-size: 20px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Experience Ended</div>
     <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Start</button>
-    <button id="openInNewTab" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">New tab</button>
-    <p id="iframeWarning" style="position: absolute; left: 85px; top: 20px; color: white; font-size: 7.5px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">For the full experience, open the code in a new browser page.</p>
+    <button id="openInNewTab" style="position: absolute; left: -50px; top: -50px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">New tab</button>
+    <p id="iframeWarning" style="position: absolute; left: 10px; top: 10px; color: white; font-size: 7.5px; font-weight: 500; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">For the full experience,<br> open the animation_Url<br> in a new browser page,<br>from PC or VR.<br>Check hint.</p>
     <button id="fullscreenButton" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Full Screen</button>
     <button id="projectInfoButton" style="position: absolute; right: 300px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Project Info</button>
     <button id="studioInfoButton" style="position: absolute; right: 200px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Studio Info</button>
@@ -378,8 +378,11 @@ C2W2 is a 30-minute browser-based runway. No downloads, no logins. Out of sevent
     </div>
     <div id="hintPanel">
         <button id="hintCloseButton">X</button>
-        <p><strong>What it is (at a glance)</strong><br><br>
-Navigation: Use W, A, S, D to move around, and the mouse to look in different directions.<br><br>
+       <p><strong>Open the full experience on-chain in a new tab</strong><br><br>
+        <i>manifold.xyz/@dfw/contract/166699248/1 → Click Animation<br>
+       decentralize-dfw.github.io/c2w2runway/c2w2.html → off-chain</i><br><br><br>
+     <p><strong>What it is (at a glance)</strong><br><br>
+Navigation: Use W, A, S, D to move around, and the mouse to look in different directions in PC. Use sticks in VR.<br><br>
 • 30 minutes, six chapters, 48 avatars<br>
 • Runs fully in a web browser (desktop/VR compatible)<br>
 • Originally on Hyperfy v1 → restructured in Three.js → mintable HTML<br>
@@ -491,7 +494,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         camera.position.set(16, 1, 0);
         camera.lookAt(0, 8, 0);
         orbitControls = new OrbitControls(camera, renderer.domElement);
-        orbitControls.target.set(0, 4, 0);
+        orbitControls.target.set(0, 5, 0);
         const height_diff = 8 - 1.6;
         const horizontal_radius = 19;
         const dist = Math.sqrt(horizontal_radius * horizontal_radius + height_diff * height_diff);
