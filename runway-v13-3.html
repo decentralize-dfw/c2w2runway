@@ -474,45 +474,60 @@ let stopInIframe = false; // Yeni sekme açıldığında iframe'de durdur
     let bootShown = false;
 
     // EKLENDİ: Desktop kontrollerini kuran fonksiyon
-    function setupDesktopControls() {
-    isInIframe = window.self !== window.top; // Iframe tespiti
+    
+    
+function setupDesktopControls() {
+    isInIframe = window.self !== window.top;
+    console.log('Is in iframe:', isInIframe);
     const blocker = document.getElementById('instructions');
     const resume = document.getElementById('resume');
     const startButton = document.getElementById('startButton');
-
+    const iframeWarning = document.getElementById('iframeWarning');
     if (isInIframe) {
-        console.log('OpenSea iframe detected, using auto-rotating camera');
-        // OpenSea için: Butonları gizle, otomatik başlat
+        openInNewTabButton.style.display = 'block';
+        iframeWarning.style.display = 'block';
+    } else {
+        openInNewTabButton.style.display = 'none';
+        iframeWarning.style.display = 'none';
+    }
+    if (isInIframe) {
+        console.log('Iframe detected, using OrbitControls for mouse rotation');
         blocker.style.display = 'none';
         resume.style.display = 'none';
         startButton.style.display = 'none';
         backgroundImg.style.display = 'none';
-        document.getElementById('fullscreenButton').style.display = 'none'; // Fullscreen butonunu da gizle
-        // Kamera pozisyonu: (0, 0.5, 0), 17m çap (8.5m yarıçap) döngü
-        camera.position.set(0, 0.5, 8.5); // Başlangıç: Z=8.5
-        camera.lookAt(0, 0.5, 0); // Merkeze bak
-        // 5 saniye sonra otomatik başlat
+        document.getElementById('fullscreenButton').style.display = 'none';
+        orbitControls = new OrbitControls(camera, renderer.domElement);
+        orbitControls.target.set(0, 0.4, 0);
+        orbitControls.enableZoom = false;
+        orbitControls.enablePan = false;
+        orbitControls.minDistance = 16;
+        orbitControls.maxDistance = 16;
+        orbitControls.minPolarAngle = Math.PI / 2;
+        orbitControls.maxPolarAngle = Math.PI / 2;
+        camera.position.set(16, 1.6, 0);
+        camera.lookAt(0, 0.4, 0);
         setTimeout(() => {
             if (isInIframe && !stopInIframe) {
+                document.getElementById('initiating').style.display = 'block';
                 fadeOutIntroSound();
                 runSequence();
                 isExperienceRunning = true;
             }
         }, 5000);
     } else {
-        // Normal desktop mantığı (mevcut orijinal kodunuz)
         controls = new PointerLockControls(camera, document.body);
-        scene.remove(playerRig); // VR rig'ini kaldır
+        scene.remove(playerRig);
         scene.add(controls.getObject());
-        camera.position.set(15, 1.8, 0);
-        controls.getObject().position.set(15, 1.8, 0);
+        camera.position.set(16, 1.6, 0);
+        controls.getObject().position.set(16, 1.6, 0);
+        controls.getObject().lookAt(0, 0.4, 0);
 
         blocker.addEventListener('click', (event) => {
             event.stopPropagation();
             controls.lock().catch((error) => {
-                console.error('Pointer Lock hatası:', error);
-                // Fallback: Kullanıcıya bilgi
-                blocker.innerHTML = '<h1>Pointer Lock Engellendi</h1><p>Tam deneyim için yeni sekmede açın.</p>';
+                console.error('Pointer Lock error:', error);
+                blocker.innerHTML = '<h1>Pointer Lock Blocked</h1><p>Open in a new tab for full experience.</p>';
             });
         });
         controls.addEventListener('lock', () => {
@@ -528,7 +543,7 @@ let stopInIframe = false; // Yeni sekme açıldığında iframe'de durdur
         });
         document.addEventListener('click', () => {
             if (!controls.isLocked && bootShown) {
-                controls.lock().catch((error) => console.error('Pointer Lock hatası:', error));
+                controls.lock().catch((error) => console.error('Pointer Lock error:', error));
             }
         });
         if (bootShown && !controls.isLocked) {
@@ -536,8 +551,6 @@ let stopInIframe = false; // Yeni sekme açıldığında iframe'de durdur
         }
     }
 }
-    
-
     
     function setupVRControls() {
 vrControlsActive = true;
@@ -1546,9 +1559,8 @@ const openInNewTabButton = document.getElementById('openInNewTab');
 openInNewTabButton.style.display = 'block';
 openInNewTabButton.addEventListener('click', (event) => {
     event.stopPropagation();
-    stopInIframe = true; // Iframe'de animasyonu durdur
+    stopInIframe = true;
     isExperienceRunning = false;
-    // Mevcut modelleri ve sesleri durdur
     models.forEach(entry => {
         if (entry && entry.mixer) {
             entry.mixer.stopAllAction();
@@ -1563,8 +1575,7 @@ openInNewTabButton.addEventListener('click', (event) => {
     if (sound6 && sound6.isPlaying) sound6.stop();
     document.getElementById('description').style.display = 'none';
     document.getElementById('ended').style.display = 'block';
-    // Yeni sekmede aç
-    window.open(window.location.href, '_blank');
+    window.open('https://opensea.io/collection/c2w2', '_blank');
 });
 
     // Full screen button and key (VR'da gizlendi)
