@@ -1,0 +1,6 @@
+şimdi de kamerayı kullanamıyorum mousela??? otomatikl niye rotate ediyor? böyle konuşmadık. kamerayı sana son kez net anlatıyorum. kameranın konumu, (16, 1.6, 0) dan olmalıdır, ve 0,4,0 a bakmalıdır. ama 0,4,0 etrafında 360 dönmelidir. yani orta noktaya mouse u oynattıkça ne tarafa oynatırsam 360 dönmelidir, 16 yarıçapındaki 1.6 metre yüksekliğinde.
+desktıp modunda hareket edebilyirm çok şükür ama orda da new tab göüzküyor? orda new tab gözükmemeli, sadece opensea modunda gözükmelidir.
+lütfen bunları düzelt!!! 
+ve bir sorum var. New tab dedik mesela opensea, o zaman hangi linki neyi açacak? desktopta link belli onu açıyor da, mesela opensea içindeyiz, ya da jsfiddle, new tab diyince opensea mi açıcak yeni sekmede? contractın linkini açması gerekicek. onu anlayacak mı yoksa manuel eklemek mi gerekiyor?
+
+
