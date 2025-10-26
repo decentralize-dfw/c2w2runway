@@ -1651,14 +1651,16 @@ openInNewTabButton.addEventListener('click', (event) => {
         hintPanel.style.display = 'block';
         hintButton.style.opacity = '0.5';
         if (isInIframe) {
-            hintPanel.style.width = '180px'; /* Iframe modda genişlik 180px */
-            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint2.html" width="100%" height="100%" style="border:none; overflow:hidden;"></iframe>';
+            hintPanel.style.width = '180px'; /* Iframe mode width */
+            hintPanel.style.height = '600px'; /* Explicit height */
+            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="740px" style="border:none; overflow:hidden; display:block;"></iframe>'; /* Iframe height is 750px - 10px */
             const hintCloseButton = document.getElementById('hintCloseButton');
             hintCloseButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 hintPanel.style.display = 'none';
                 hintButton.style.opacity = '1';
-                hintPanel.style.width = '375px'; /* Kapatıldığında genişlik varsayılana döner */
+                hintPanel.style.width = '375px'; /* Reset to default width */
+                hintPanel.style.height = '750px'; /* Reset to default height */
             });
         }
         projectInfoPanel.style.display = 'none';
@@ -1669,6 +1671,7 @@ openInNewTabButton.addEventListener('click', (event) => {
         creatorsNoteButton.style.opacity = '1';
     }
 });
+
     hintCloseButton.addEventListener('click', (event) => {
         event.stopPropagation();
         hintPanel.style.display = 'none';
