@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>C2W2 VIRTUAL RUNWAY BY DFW</title>
+
+
     <style>
+
+ 
+    
         :root {
             --fg: #fff;
             --bg: #000;
@@ -136,13 +141,14 @@
         }
         #description {
             position: absolute;
-            bottom: 10px;
+         letter-spacing: -1px;
+            bottom: 12px;
             left: 50px;
             right: 50px;
-            color: white;
-            font-size: 12px;
+            color: rgba(255,255,255,1);
+            font-size: 15px;
             font-family: Helvetica;
-            font-weight: 500;
+            font-weight: 800;
             text-align: center;
             display: none;
         }
@@ -263,7 +269,9 @@
     <div id="ended" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 12px 12px; color: #fff; font-size: 20px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Experience Ended</div>
     <button id="startButton" style="position: absolute; left: 10px; bottom: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 15px; font-weight: 700; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Start</button>
     <button id="openInNewTab" style="position: absolute; left: -50px; top: -50px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">New tab</button>
-    <p id="iframeWarning" style="position: absolute; left: 10px; top: 10px; color: white; font-size: 7.5px; font-weight: 500; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">For the full experience,<br> open the animation_Url<br> in a new browser page,<br>from PC or VR.<br>Check hint.</p>
+    <p id="iframeWarning" style="position: absolute; left: 10px; top: 10px; color: white; font-size: 7.5px; font-weight: 500; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; font-style: italic;display: none;">For the full experience:<br> check hint.<br>PC / VR</p>
+    <p id="iframeWarning2" style="position: absolute; left: 10px; bottom: 10px; color: white; font-size: 14px; font-weight: 400; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;letter-spacing: -1px;">C2W2<br>Virtual<br>Runway</p>
+    <p id="dfw" style="position: absolute; right: 10px; bottom: 10px; color: white; font-size: 14px; font-weight: 400; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;letter-spacing: -1px;">DFW</p>
     <button id="fullscreenButton" style="position: absolute; left: 10px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Full Screen</button>
     <button id="projectInfoButton" style="position: absolute; right: 300px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Project Info</button>
     <button id="studioInfoButton" style="position: absolute; right: 200px; top: 10px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 8px 12px; color: #fff; font-size: 12px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif;">Studio Info</button>
@@ -474,12 +482,14 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     const backgroundImg = document.getElementById('backgroundImg');
     let bootShown = false;
 
-    function setupDesktopControls() {
+   function setupDesktopControls() {
     isInIframe = window.self !== window.top;
     const blocker = document.getElementById('instructions');
     const resume = document.getElementById('resume');
     const startButton = document.getElementById('startButton');
     const iframeWarning = document.getElementById('iframeWarning');
+     const iframeWarning2 = document.getElementById('iframeWarning2');
+     const dfw = document.getElementById('dfw');
     const openInNewTab = document.getElementById('openInNewTab');
 
     if (isInIframe) {
@@ -493,6 +503,8 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         document.getElementById('studioInfoButton').style.display = 'none';
         document.getElementById('creatorsNoteButton').style.display = 'none';
         iframeWarning.style.display = 'block';
+        iframeWarning2.style.display = 'block';
+        dfw.style.display = 'block';
         openInNewTab.style.display = 'block';
         scene.remove(playerRig);
         scene.add(camera);
@@ -541,7 +553,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             }
         });
         controls.addEventListener('unlock', () => {
-            resume.style.display = 'block';
+            // Removed: resume.style.display = 'block';
         });
         document.addEventListener('click', () => {
             if (!controls.isLocked && bootShown) {
@@ -564,6 +576,8 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     document.getElementById('instructions').style.display = 'none';
     document.getElementById('openInNewTab').style.display = 'none';
     document.getElementById('iframeWarning').style.display = 'none';
+    document.getElementById('iframeWarning2').style.display = 'none';
+    document.getElementById('dfw').style.display = 'none';
 
     backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
     backgroundImg.style.display = 'block';
@@ -806,57 +820,57 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     'https://arweave.net/axaE1XdSghN3qXGhptoi39TuzzC3Lw4X3YjTDcK3pTg', // Model 49 - 49-Finale_unOpt_RW1000
 ];
    
-    const modelDescriptions = [
-        'Model 1: Bellicapelli, a stylish and elegant design.',
-        'Model 2: Matisse Purple, vibrant and artistic.',
-        'Model 3: Bacon-Freud, inspired by surrealist art.',
-        'Model 4: Bacon Scene, a dynamic visual composition.',
-        'Model 5: Mutant Bacon, a bold and unconventional piece.',
-        'Model 6: Squallo, sleek and modern aesthetic.',
-        'Model 7: Curator, a refined and sophisticated model.',
-        'Model 8: Joker, chaotic and expressive design.',
-        'Model 9: Bulkgelin, intricate and detailed.',
-        'Model 10: Mare, serene and flowing visuals.',
-        'Model 11: Memelegance Dress, chic and trendy.',
-        'Model 12: White Wears DFW, minimalist elegance.',
-        'Model 13: Invert Memelegance Suit, a bold twist.',
-        'Model 14: Pile, textured and layered design.',
-        'Model 15: Red Punk, vibrant and rebellious.',
-        'Model 16: Memelegance Suit, sharp and stylish.',
-        'Model 17: Saturn Weekend, cosmic and futuristic.',
-        'Model 18: 6529 Memes, playful and animated.',
-        'Model 19: Art Deco, classic and ornate.',
-        'Model 20: XCopy, bold digital art vibes.',
-        'Model 21: C2W2 Rich Ailu Scene, luxurious and detailed.',
-        'Model 22: Gooner, edgy and modern.',
-        'Model 23: Davicni, inspired by classical art.',
-        'Model 24: Cozom, vibrant and colorful.',
-        'Model 25: Beeple, futuristic and digital.',
-        'Model 26: Samsprat, whimsical and creative.',
-        'Model 27: Asiah, culturally rich design.',
-        'Model 28: Chrome Tiger, sleek and powerful.',
-        'Model 29: Teddyminator, playful yet bold.',
-        'Model 30: Asian, elegant and traditional.',
-        'Model 31: Mafia Clown, quirky and intense.',
-        'Model 32: Samu, inspired by samurai aesthetics.',
-        'Model 33: Baiencaigai, vibrant and eclectic.',
-        'Model 34: C-Rabbit, cute yet dynamic.',
-        'Model 35: Neo, futuristic and sleek.',
-        'Model 36: Psy Clown, psychedelic and bold.',
-        'Model 37: Xeu2, experimental and modern.',
-        'Model 38: Papaz, ornate and ceremonial.',
-        'Model 39: Sleek Robo Bitch Spikey, cyberpunk edge.',
-        'Model 40: Donmac, classic and refined.',
-        'Model 41: Red Wears DFW, bold and striking.',
-        'Model 42: Cybergesu, futuristic and spiritual.',
-        'Model 43: Steve, modern and minimal.',
-        'Model 44: Millefeuille Dobby, layered and intricate.',
-        'Model 45: Junya, avant-garde fashion.',
-        'Model 46: Electrogod, electrifying and bold.',
-        'Model 47: Davicni, artistic and classical.',
-        'Model 48: Curator, elegant and curated.',
-        'Model 49: Memelegance Suit FUP, stylish and modern.'
-    ];
+const modelDescriptions = [
+    'Belli Capelli.',
+    'Lydia.',
+    'Lucien.',
+    'The Wrestler of Silence.',
+    'The Devoured Remnant.',
+    'Squallor Shark.',
+    'Neue²Dojo Curator.',
+    'Joker.',
+    'Bulky Bride.',
+    'Mare.',
+    'Vertical CT Feed Person.',
+    'Astral Kindergarten Teacher.',
+    'Invert Smiley.',
+    'Private Pile.',
+    'Uncle Red.',
+    'Xoku.',
+    'Weekend @ Saturn.',
+    'Seize.',
+    'Midemoiselle.',
+    'Ferryman.',
+    'Panda Boss.',
+    'Founder Ape.',
+    'Davicni.',
+    'Chromozom.',
+    'Can\'t See Beep Bop Crap.',
+    'Bone on Air.',
+    'Ashium.',
+    'RR-Tiger.',
+    'Teddyminator.',
+    'Bad Luck.',
+    'Mayhem Clown.',
+    'Samu.',
+    'Baincaigai.',
+    'exBunny.',
+    'Thomas_DT.',
+    'Bobo Delirium.',
+    'Xeu2.',
+    'Ya Bish Opps.',
+    'sleekrobobİtch/SPIKES.',
+    'Don Mac Don.',
+    'Call_2_Sim.',
+    'CYB0RG-E-xyz.',
+    'Steroive iObs.',
+    'Tobby Millefuille.',
+    'Junya.',
+    'Elextrogxd.',
+    'Xoqou.',
+    'FeLiNa.'
+];
+
     const models = [];
     
     const raycaster = new THREE.Raycaster();
