@@ -258,7 +258,7 @@
 </head>
 <body>
     <div id="loading">Loading...<img src="https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/c2w2background.jpg"></div>
-    <img id="backgroundImg" src="https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/c2w2background.jpg">
+    <img id="backgroundImg" src="https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/desktop-header.jpg">
     <div id="instructions" class="panel">
         <h1>Click to Enter</h1>
     </div>
@@ -581,7 +581,7 @@ function setupVRControls() {
     document.getElementById('iframeWarning2').style.display = 'none';
     document.getElementById('dfw').style.display = 'none';
 
-    backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
+    backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/VR-header.jpg';
     backgroundImg.style.display = 'block';
     playIntroSound();
 
@@ -739,7 +739,7 @@ function setupVRControls() {
     gltfLoader.setDRACOLoader(dracoLoader);
     gltfLoader.setMeshoptDecoder(MeshoptDecoder);
     
-    const spaceUrl = 'https://arweave.net/wflGJydOx3geWYH1zTnECUxRPsCyz1wC2Mt1V4Zq3Aw';
+    const spaceUrl = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runwayglbmodels1000/main/space-rw-grfft-v2-opt-v3.glb'; //   https://arweave.net/wflGJydOx3geWYH1zTnECUxRPsCyz1wC2Mt1V4Zq3Aw
     let spaceBoundingBox = null;
     document.getElementById('loading').style.display = 'block';
     gltfLoader.load(
@@ -1671,7 +1671,7 @@ openInNewTabButton.addEventListener('click', (event) => {
         if (isInIframe) {
             hintPanel.style.width = '250px'; /* Iframe mode width */
             hintPanel.style.height = '510px'; /* Explicit height */
-            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="620px" style="border:none; overflow:hidden; display:block;"></iframe>'; /* Iframe height is 750px - 10px */
+            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="550px" style="border:none; overflow:hidden; display:block;"></iframe>'; /* Iframe height is 750px - 10px */
             const hintCloseButton = document.getElementById('hintCloseButton');
             hintCloseButton.addEventListener('click', (event) => {
                 event.stopPropagation();
