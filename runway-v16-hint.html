@@ -482,14 +482,14 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     const backgroundImg = document.getElementById('backgroundImg');
     let bootShown = false;
 
-   function setupDesktopControls() {
+  function setupDesktopControls() {
     isInIframe = window.self !== window.top;
     const blocker = document.getElementById('instructions');
     const resume = document.getElementById('resume');
     const startButton = document.getElementById('startButton');
     const iframeWarning = document.getElementById('iframeWarning');
-     const iframeWarning2 = document.getElementById('iframeWarning2');
-     const dfw = document.getElementById('dfw');
+    const iframeWarning2 = document.getElementById('iframeWarning2');
+    const dfw = document.getElementById('dfw');
     const openInNewTab = document.getElementById('openInNewTab');
 
     if (isInIframe) {
@@ -522,6 +522,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         orbitControls.maxPolarAngle = polarAngle;
         orbitControls.enableZoom = false;
         orbitControls.enablePan = false;
+        playIntroSound();
         setTimeout(() => {
             if (isInIframe && !stopInIframe) {
                 document.getElementById('initiating').style.display = 'block';
@@ -536,6 +537,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         scene.add(controls.getObject());
         camera.position.set(15, 1.8, 0);
         controls.getObject().position.set(15, 1.8, 0);
+        playIntroSound();
 
         blocker.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -566,7 +568,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     }
 }
 
-   function setupVRControls() {
+function setupVRControls() {
     vrControlsActive = true;
     document.getElementById('fullscreenButton').style.display = 'none';
     document.getElementById('projectInfoButton').style.display = 'none';
@@ -581,6 +583,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
 
     backgroundImg.src = 'https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/main/Screenshot%202025-10-23%20182757.png';
     backgroundImg.style.display = 'block';
+    playIntroSound();
 
     const vrButton = VRButton.createButton(renderer);
     vrButton.textContent = 'Touch to Start';
@@ -626,6 +629,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         document.getElementById('startButton').style.display = 'none';
         backgroundImg.style.display = 'none';
         document.getElementById('initiating').style.display = 'block';
+        fadeOutIntroSound();
         runSequence();
     });
 
@@ -1019,28 +1023,28 @@ const introSoundUrl = 'https://arweave.net/3TRZ2I3sMKOWITQLSnwJw0u8DuBJErOzgzKM_
         playIntroSound(); 
     }
 });
-    function playIntroSound() {
-if (introSoundBuffer) {
-    if (audioListener.context.state === 'suspended') {
-        audioListener.context.resume().then(() => {
+function playIntroSound() {
+    if (introSoundBuffer) {
+        if (audioListener.context.state === 'suspended') {
+            audioListener.context.resume().then(() => {
+                introSound = new THREE.Audio(audioListener);
+                introSound.setBuffer(introSoundBuffer);
+                introSound.setLoop(true);
+                introSound.setVolume(0.5);
+                introSound.play();
+                console.log('Intro sound played');
+            }).catch(e => console.error('Intro sound AudioContext resume failed:', e));
+        } else {
             introSound = new THREE.Audio(audioListener);
             introSound.setBuffer(introSoundBuffer);
             introSound.setLoop(true);
             introSound.setVolume(0.5);
             introSound.play();
             console.log('Intro sound played');
-        }).catch(e => console.error('Intro sound AudioContext resume failed:', e));
+        }
     } else {
-        introSound = new THREE.Audio(audioListener);
-        introSound.setBuffer(introSoundBuffer);
-        introSound.setLoop(true);
-        introSound.setVolume(0.5);
-        introSound.play();
-        console.log('Intro sound played');
+        console.error('Intro sound buffer not ready');
     }
-} else {
-    console.error('Intro sound buffer not ready');
-}
 }
     function fadeOutIntroSound() {
         if (introSound && introSound.isPlaying) { 
@@ -1860,3 +1864,9 @@ openInNewTabButton.addEventListener('click', (event) => {
 </script>
 </body>
 </html>
+
+
+
+
+
+
