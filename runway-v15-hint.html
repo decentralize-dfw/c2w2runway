@@ -182,7 +182,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,.25);
             z-index: 20;
-            padding: 20px;
+            padding: 10px;
             color: #fff;
             font-size: 14px;
             font-weight: 400;
@@ -1665,9 +1665,9 @@ openInNewTabButton.addEventListener('click', (event) => {
         hintPanel.style.display = 'block';
         hintButton.style.opacity = '0.5';
         if (isInIframe) {
-            hintPanel.style.width = '180px'; /* Iframe mode width */
+            hintPanel.style.width = '250px'; /* Iframe mode width */
             hintPanel.style.height = '510px'; /* Explicit height */
-            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="740px" style="border:none; overflow:hidden; display:block;"></iframe>'; /* Iframe height is 750px - 10px */
+            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="620px" style="border:none; overflow:hidden; display:block;"></iframe>'; /* Iframe height is 750px - 10px */
             const hintCloseButton = document.getElementById('hintCloseButton');
             hintCloseButton.addEventListener('click', (event) => {
                 event.stopPropagation();
@@ -1860,4 +1860,3 @@ openInNewTabButton.addEventListener('click', (event) => {
 </script>
 </body>
 </html>
-
