@@ -254,8 +254,15 @@ border-color: rgba(255,255,255,.6);
     font-weight: 700;
     display: inline-block;
     margin-bottom: 12px;
+  
     
 }
+
+#projectInfoPanel a, #studioInfoPanel a, #hintPanel a, #creatorsNotePanel a {
+    color: #b1c2fa;
+    text-decoration: underline;
+}
+
     </style>
     <script type="importmap">
         {
@@ -320,25 +327,36 @@ C2W2 is a 30-minute browser-based runway. No downloads, no logins. Out of sevent
     </div>
     <div id="hintPanel">
         <button id="hintCloseButton">X</button>
-       <p><strong>Links</strong><br><br>
-        <i>manifold.xyz/@dfw/contract/166699248/1 → Minted Experience<br>
-       decentralize-dfw.github.io/c2w2runway/c2w2.html → off-chain<br>
-       hyperfy.io/c2w2  → hyperfy world experience </i><br><br><br>
-     <p><strong>What it is (at a glance)</strong><br><br>
-Navigation: Use W, A, S, D to move around, and the mouse to look in different directions in PC. Use sticks in VR.<br><br>
-• • Runs fully in a web browser<br>
-• Runs fully in a web browser (desktop/VR compatible)<br>
-• Features 48 garments (out of 75), all in VRM format<br>
+       
+               <p><strong>Navigation: Use W, A, S, D to move around, and the mouse to look in different directions in PC.</strong><br><br><br>
+
+       <p><strong>Links</strong><br>
+      
+ <a href="manifold.xyz/@dfw/contract/166699248/1" target="_blank">Manifold</a> → Minted Experience<br>
+
+ <a href="https://opensea.io/item/ethereum/0xf688f59da001827bc8658622557ba33ffd6262a7/1" target="_blank">Opensea</a> → Minted Experience<br>
+
+      <a href="decentralize-dfw.github.io/c2w2runway/c2w2.html" target="_blank">Github</a> → Off-Chain Experience<br>
+
+      <a href="hyperfy.io/c2w2" target="_blank">Hyperfy</a> → Metaverse Experience<br>
+
+      <a href="digitalforgerywork.shop/c2w2" target="_blank">DFW Website</a> → Collection Explore Interface<br><br><br>
+
+    
+     <p><strong>What it is (at a glance)</strong>
+<br>
 • 30-minute experience<br>
-• Created using Clo3D, Blender, and Rhinoceros<br>
-• Optimized for VR headsets<br>
+• Runs fully in a web browser on-chain<br>
+• Optimized for VR headsets, use the same link<br>
+• Features 48 garments (out of 75), all in VRM format<br>
+• Created using Clo3D, Blender<br>
 • Originally built on Hyperfy v1<br>
 • Rebuilt using Three.js<br>
 • Mintable as an HTML-based NFT<br>
 • All files used in show are on ETH.<br>
 
 
-Website: digitalforgerywork.shop
+
 </p><br><br>
 
 </i>
@@ -348,6 +366,9 @@ Website: digitalforgerywork.shop
         <p><strong>C2W2 Virtual Runway, 2025</strong><br><br>
 For 60+ VRM avatars, 30 minutes. <br>Browser-based, on-chain. <br>No login, no download—just click.<br><br>
 Redefining Digital Art, Fashion, and the Metaverse by DFW.</p>
+<p><strong>C2W2 Virtual Runway, 2025</strong><br><br>
+For 60+ VRM avatars, 30 minutes. <br>Browser-based, on-chain. <br>No login, no download—just click.<br><br>
+Redefining Digital Art, Fashion, and the Metaverse by DFW.</p><i><a href="https://youtu.be/nyEjJ9KvnQc" target="_blank">Listen it here.</a></i>
 <p>Touch, the touch of Adam, or the message that came to Muhammad through the act of reading. These are gestures that appeal to the senses, forming the foundation of being human, and they are also the roots of the empirical knowledge we possess today. Touch, reading, wars, inventions, kingdoms, nations, stories—at the end of all of these, humankind has evolved into the era of the click. Knowledge once acquired through touch is now absorbed by tapping a digital screen or clicking a mouse. With a single click you can earn billions, lose everything, infect your computer with a virus and lose all your work, or—by clicking and scrolling through what you read—reconstruct yourself from scratch.</p>
 <p>The same applies to agents. With a click, we can generate an identity, a character, nearly an entire life. A human being is born, grows up, and until the age of eighteen their identity is considered unsettled by society; they attend schools, work, eventually get a job. Now, with a few clicks, all of this unfolds autonomously, in minutes, even seconds. You copy a piece of text, and that becomes someone’s role, their character, their life. All with a click.</p>
 <p>Click to wear, click to be. Since this is an avatar collection, the phrase is partly a pun on “ready to wear”—a digital reinterpretation. Yet the deeper meaning of the click lies in its resonance with biology: just as cells divide and multiply, a tree grows, a flower blooms, or the sun rises, sets, and turns into a full moon, clicking is the digital counterpart of a natural process. You click a link, and for thirty minutes you experience something three-dimensional and 360-degree. That click is equivalent to showering, putting on perfume, getting in the car, driving forty minutes, parking, leaving your coat at the cloakroom, buying a ticket, and finally experiencing a museum or performance. Or, it can be seen as the natural outcome of a generation that, after the plague of Covid, grew accustomed to the comfort of working from home and is now searching for new approaches to entertainment, art, and design.</p>
@@ -365,6 +386,7 @@ Redefining Digital Art, Fashion, and the Metaverse by DFW.</p>
 All these transformations, these ideas, are not presented as neat “10 new concepts for your runway” after a ChatGPT session. They are observations, echoes of voices in the mind—organic transmissions of the human-digital metamorphosis, told first-hand. Just like this very text—begun in October 2024, carried into September 2025, and still awaiting the moment of its release—scattered and fragmented at times. Because in the end, neither the avatars nor the experience will be reduced by the viewer to “a quick summary” asked from a chat program. When the experience ends, the feelings the audience carries remain beyond code, with no biological equivalent yet written. Just as an AI that recommends meditation cannot meditate itself, the impressions left in the viewer are organic, immeasurable. They can only click, and watch.</p>
 <p>This text, likewise, is nothing more than what the creator’s mind recorded while following the trail of their own pen.<br>
 <strong>Enjoy the show.</strong></p>
+<i><a href="https://youtu.be/nyEjJ9KvnQc" target="_blank">Listen it here.</a></i>
     </div>
     <script type="module">
     import * as THREE from 'three';
@@ -1802,7 +1824,6 @@ openInNewTabButton.addEventListener('click', (event) => {
 </script>
 </body>
 </html>
-
 
 
 
