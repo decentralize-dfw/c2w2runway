@@ -100,28 +100,28 @@
             font-size: 8px;
             display: none;
         }
-        /* EKLENDİ: VRButton için stil (panel stiliyle eşleşmesi için) */
+       
         #VRButton {
-            position: fixed;
-            backdrop-filter: blur(var(--panelBlur));
-            background: var(--panel);
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,.25);
-            z-index: 15;
-            inset: auto;
-            top: 15%;
-            left: 200px;
-            right: 200px;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            padding: 8px 12px;
-            font-family: Helvetica, Arial, sans-serif;
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--fg);
-            cursor: pointer;
-        }
+    position: fixed;
+    backdrop-filter: blur(var(--panelBlur));
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    z-index: 15;
+    inset: auto;
+    top: 15%; 
+    left: 40%; 
+    width: 20%; /
+    transform: translate(0, -50%);
+    text-align: center;
+    padding: 8px 12px; 
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--fg);
+    cursor: pointer;
+}
         #initiating {
             position: absolute;
             top: 50%;
@@ -218,8 +218,8 @@
         #projectInfoPanel p, #studioInfoPanel p, #hintPanel p, #creatorsNotePanel p {
             margin: 10px 0;
             text-align: justify;
-  text-align-last: left;   /* son satır sola yaslı kalsın (istersen 'justify' yap) */
-  hyphens: auto;           /* heceleme (satır sonu bölme) */
+  text-align-last: left;  
+  hyphens: auto;           
   -webkit-hyphens: auto;
   -ms-hyphens: auto;
         }
@@ -233,13 +233,13 @@
     line-height: 1.4;
     font-style: italic;
     text-align: justify;
-  text-align-last: left;   /* son satır sola yaslı kalsın (istersen 'justify' yap) */
+  text-align-last: left;   
        
   -webkit-hyphens: auto;
   -ms-hyphens: auto;
 }
 
-/* i içindeki başlık kalınları bir tık büyük kalsın istiyorsan: */
+
 #projectInfoPanel i strong, #studioInfoPanel i strong, #hintPanel i strong, #creatorsNotePanel i strong {
     font-size: 13px !important;
     font-weight: 700;
@@ -556,7 +556,6 @@ All these transformations, these ideas, are not presented as neat “10 new conc
             }
         });
         controls.addEventListener('unlock', () => {
-            // Removed: resume.style.display = 'block';
         });
         document.addEventListener('click', () => {
             if (!controls.isLocked && bootShown) {
