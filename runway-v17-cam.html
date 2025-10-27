@@ -455,7 +455,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
     const backgroundImg = document.getElementById('backgroundImg');
     let bootShown = false;
 
- function setupDesktopControls() {
+function setupDesktopControls() {
     isInIframe = window.self !== window.top;
     const blocker = document.getElementById('instructions');
     const resume = document.getElementById('resume');
@@ -489,13 +489,11 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         document.getElementById('lensBtn3').style.display = 'block';
         scene.remove(playerRig);
         scene.add(camera);
-        camera.position.set(16, 1, 0);
+        camera.position.set(20, 1, 0);
         camera.lookAt(0, 5, 0);
         orbitControls = new OrbitControls(camera, renderer.domElement);
         orbitControls.target.set(0, 5, 0);
-        const height_diff = 8 - 1.6;
-        const horizontal_radius = 19;
-        const dist = Math.sqrt(horizontal_radius * horizontal_radius + height_diff * height_diff);
+        const dist = camera.position.distanceTo(orbitControls.target);
         orbitControls.minDistance = dist;
         orbitControls.maxDistance = dist;
         const polarAngle = Math.acos((camera.position.y - orbitControls.target.y) / dist);
@@ -503,6 +501,7 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         orbitControls.maxPolarAngle = polarAngle;
         orbitControls.enableZoom = false;
         orbitControls.enablePan = false;
+        orbitControls.update();
         playIntroSound();
         setTimeout(() => {
             if (isInIframe && !stopInIframe) {
@@ -516,40 +515,58 @@ All these transformations, these ideas, are not presented as neat “10 new conc
         // Camera buttons event listeners
         document.getElementById('cameraBtn1').addEventListener('click', (event) => {
             event.stopPropagation();
-            camera.position.set(16, 1, 0);
+            camera.position.set(20, 1, 0);
             camera.lookAt(0, 5, 0);
             orbitControls.target.set(0, 5, 0);
+            const dist = camera.position.distanceTo(orbitControls.target);
+            orbitControls.minDistance = dist;
+            orbitControls.maxDistance = dist;
+            const polarAngle = Math.acos((camera.position.y - orbitControls.target.y) / dist);
+            orbitControls.minPolarAngle = polarAngle;
+            orbitControls.maxPolarAngle = polarAngle;
             orbitControls.update();
         });
         document.getElementById('cameraBtn2').addEventListener('click', (event) => {
             event.stopPropagation();
-            camera.position.set(20, 6, 0);
-            camera.lookAt(0, 5, 0);
+            camera.position.set(25, 7, 0);
+            camera.lookAt(0, 0, 0);
             orbitControls.target.set(0, 5, 0);
+            const dist = camera.position.distanceTo(orbitControls.target);
+            orbitControls.minDistance = dist;
+            orbitControls.maxDistance = dist;
+            const polarAngle = Math.acos((camera.position.y - orbitControls.target.y) / dist);
+            orbitControls.minPolarAngle = polarAngle;
+            orbitControls.maxPolarAngle = polarAngle;
             orbitControls.update();
         });
         document.getElementById('cameraBtn3').addEventListener('click', (event) => {
             event.stopPropagation();
-            camera.position.set(0, 0, 0);
+            camera.position.set(6, 16, 0);
             camera.lookAt(0, 0, 0);
-            orbitControls.target.set(0, 0, 0);
+            orbitControls.target.set(0, 7, 0);
+            const dist = camera.position.distanceTo(orbitControls.target);
+            orbitControls.minDistance = dist;
+            orbitControls.maxDistance = dist;
+            const polarAngle = Math.acos((camera.position.y - orbitControls.target.y) / dist);
+            orbitControls.minPolarAngle = polarAngle;
+            orbitControls.maxPolarAngle = polarAngle;
             orbitControls.update();
         });
 
         // Lens buttons event listeners
         document.getElementById('lensBtn1').addEventListener('click', (event) => {
             event.stopPropagation();
-            camera.fov = 75;
+            camera.fov = 80;
             camera.updateProjectionMatrix();
         });
         document.getElementById('lensBtn2').addEventListener('click', (event) => {
             event.stopPropagation();
-            camera.fov = 40; // Zoom in
+            camera.fov = 50; // Zoom in
             camera.updateProjectionMatrix();
         });
         document.getElementById('lensBtn3').addEventListener('click', (event) => {
             event.stopPropagation();
-            camera.fov = 120; // Zoom out
+            camera.fov = 100; // Zoom out
             camera.updateProjectionMatrix();
         });
     } else {
