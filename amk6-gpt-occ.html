@@ -1023,48 +1023,53 @@ const introSoundUrl = 'https://arweave.net/3TRZ2I3sMKOWITQLSnwJw0u8DuBJErOzgzKM_
         playIntroSound(); 
     }
 });
-// DELETE existing playIntroSound()
-// ADD this instead:
+
 function playIntroSound() {
-    if (introSound && introSound.isPlaying) return;
     if (!introSoundBuffer) return;
 
-    const start = () => {
-        introSound = new THREE.Audio(audioListener);
-        introSound.setBuffer(introSoundBuffer);
-        introSound.setLoop(true);
-        introSound.setVolume(0.5);
+    if (introSound && introSound.isPlaying) return;
+
+    introSound = new THREE.Audio(audioListener);
+    introSound.setBuffer(introSoundBuffer);
+    introSound.setLoop(true);
+    introSound.setVolume(0.5);
+
+    const ctx = audioListener.context;
+    const startPlayback = () => {
         try { introSound.play(); } catch(e) { console.error(e); }
     };
 
-    const ctx = audioListener.context;
-    if (ctx.state === 'suspended') {
-        ctx.resume().then(start).catch(e => console.error('resume fail', e));
+    if (ctx.state === "suspended") {
+        ctx.resume().then(startPlayback).catch(() => {});
     } else {
-        start();
+        startPlayback();
     }
 
+ 
     const unlock = () => {
-        if (!introSound.isPlaying) start();
-        ['pointerdown','touchstart','keydown'].forEach(t => 
+        if (!introSound.isPlaying) startPlayback();
+        ["pointerdown","touchstart","keydown"].forEach(t =>
             document.removeEventListener(t, unlock, { once:true })
         );
     };
-    ['pointerdown','touchstart','keydown'].forEach(t => 
+    ["pointerdown","touchstart","keydown"].forEach(t =>
         document.addEventListener(t, unlock, { once:true })
     );
 }
 
 function fadeOutIntroSound() {
     if (!introSound || !introSound.isPlaying) return;
+
     const ctx = audioListener.context;
+    const g = introSound.gain.gain;
     const now = ctx.currentTime;
+
     try {
-        const g = introSound.gain.gain;
         g.cancelScheduledValues(now);
         g.setValueAtTime(g.value, now);
         g.linearRampToValueAtTime(0, now + 4);
     } catch(e) { console.error(e); }
+
     setTimeout(() => {
         try { introSound.stop(); } catch(e) {}
     }, 4000);
@@ -1235,10 +1240,10 @@ if (sound6Buffer) {
     }
     
 
-  async function runSequence() {
-    fadeOutIntroSound();
+async function runSequence() {
+    fadeOutIntroSound(); // fades out intro immediately when experience starts
     experienceRunning = true;
-    document.getElementById('initiating').style.display = 'block';
+    document.getElementById("initiating").style.display = "block";
     try {
         await loadModel(1);
         await wait(vrControlsActive ? 10 : 5);
@@ -1536,12 +1541,12 @@ if (sound6Buffer) {
         } catch (error) {
         console.error(`Sequence error at model ${models.length || 'unknown'}:`, error);
     } finally {
-        document.getElementById('initiating').style.display = 'none';
-        document.getElementById('ended').style.display = 'block';
+        document.getElementById("initiating").style.display = "none";
+        document.getElementById("ended").style.display = "block";
         await wait(3);
-        document.getElementById('ended').style.display = 'none';
+        document.getElementById("ended").style.display = "none";
         if (!vrControlsActive) {
-            document.getElementById('startButton').style.display = 'block';
+            document.getElementById("startButton").style.display = "block";
         }
         experienceRunning = false;
     }
