@@ -10,3 +10,17 @@ functionda herhangi brişey değişiyorsa, sadece adıyla bunu sil de, ve yerine
 başka açıklama yapma
 her biri değişim yeni function cod adtifacti içinde olsun, düz yazı şeklinde yazma,
 her bir deişimi 1 2 3 diye notla ve başlıklarını title yap
+
+
+
+audio problem
+
+burda şimdi üç tane mod var. 
+bir tane desktop modu, tamamen bir sayfada tek başına açılığı zaman
+iframe modu, kamera kilitleniyor, hint falan farklı gözüküyor
+bir de vr modu
+modeller aynı fakat birkaç şey hariç kontrolelr vs. çoğu şey aynı.
+
+şimdi şöyle bir şey var: introSound var kodda. bunun görevi experience active olmadığı her an çalmak. desktopta, ve iframe de direk otomatik çalmaya başlamalıdır. ne zaman initialing yazısı gelse, yani experience başlamaya kalksa, o zaman fade out olmalıdır. bu kodda var zaten. ve iframe modunda gayet iyi çalışıyor. fakat desktop da ve vr modunda sıkıntı var. çünkü en başta hiç çalmıyor, ne zaman experience başlasa sound1 le birlikte çalmaya başlıyor? dekstopta da aynı iframe de olduğu gibi, initilize boyunca, yain experience chain reaction abşladığı andan itibaren fadeout olmaldıır 4 saniye boyunca. 
+vr için de şöyle olmlaıdır: sayfayı açtık. açılış ekranı jpg i ve enter vr tuşunu görüyoruz ya. o sırada,  yani sayfa açılıdğı zaman çalmalıdır. ne zaman enter vr dedik, ve experience intiliaze etmeye başladı, o zaman o da fadeout olmalıdır tıpkı diğerleri gibi. 
+anlatabiliyor myum? lütfen bu problemi nasıl halledileceğini göster.
