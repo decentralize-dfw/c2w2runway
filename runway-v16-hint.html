@@ -101,31 +101,35 @@
             display: none;
         }
        
-        #VRButton {
-    position: fixed;
-    backdrop-filter: blur(var(--panelBlur));
-    background: var(--panel);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    z-index: 15;
-    inset: auto;
-    top: 15%;
-    left: 40%;
-    width: 20%;
-    transform: translate(0, -50%);
-    text-align: center;
-    padding: 8px 12px;
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--fg);
-    cursor: pointer;
-    overflow: hidden;
-    max-height: 40px; 
-    white-space: nowrap; 
-    text-overflow: ellipsis; 
-    line-height: 24px; 
+       #VRButton {
+position: fixed;
+backdrop-filter: blur(var(--panelBlur));
+background: var(--panel);
+border: 2px solid rgba(255,255,255,.3); 
+border-radius: 12px;
+box-shadow: 0 10px 30px rgba(0,0,0,.25);
+z-index: 15;
+inset: auto;
+top: 15%;
+left: 40%;
+width: 20%;
+transform: translate(0, -50%);
+text-align: center;
+padding: 8px 12px;
+font-family: Helvetica, Arial, sans-serif;
+font-size: 17px;
+font-weight: 700;
+color: var(--fg);
+cursor: pointer;
+overflow: hidden;
+max-height: 40px;
+white-space: nowrap;
+text-overflow: ellipsis;
+line-height: 24px;
+transition: border-color 0.3s ease; 
+}
+#VRButton:hover {
+border-color: rgba(255,255,255,.6); 
 }
         #initiating {
             position: absolute;
