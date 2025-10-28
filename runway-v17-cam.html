@@ -296,8 +296,6 @@ border-color: rgba(255,255,255,.6);
     <p id="iframeWarning2" style="position: absolute; left: 10px; bottom: 10px; color: white; font-size: 14px; font-weight: 400; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;letter-spacing: -1px;">C2W2<br>Virtual<br>Runway</p>
     <p id="dfw" style="position: absolute; right: 10px; bottom: 10px; color: white; font-size: 14px; font-weight: 400; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;letter-spacing: -1px;">DFW</p>
 
-
-    <!-- Add these after the existing #dfw element in the body -->
 <p id="cameraLabel" style="position: absolute; left: 10px; top: 10px; color: white; font-size: 8px; font-weight: 500; text-align: left; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">Camera</p>
 <button id="cameraBtn1" style="position: absolute; left: 45px; top: 9px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 1px 5px; color: #fff; font-size: 7px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">1</button>
 <button id="cameraBtn2" style="position: absolute; left: 65px; top: 9px; backdrop-filter: blur(8px); background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 10; padding: 1px 5px; color: #fff; font-size: 7px; font-weight: 500; text-align: center; margin: 0; font-family: Helvetica, Arial, sans-serif; display: none;">2</button>
@@ -518,11 +516,11 @@ function setupDesktopControls() {
             }
         }, 5000);
 
-        // Set initial selected states
+        
         document.getElementById('cameraBtn1').classList.add('selected');
         document.getElementById('lensBtn1').classList.add('selected');
 
-        // Camera buttons event listeners
+        
         const cameraButtons = [document.getElementById('cameraBtn1'), document.getElementById('cameraBtn2'), document.getElementById('cameraBtn3')];
         cameraButtons.forEach(btn => {
             btn.addEventListener('click', (event) => {
@@ -552,7 +550,7 @@ function setupDesktopControls() {
             });
         });
 
-        // Lens buttons event listeners
+        
         const lensButtons = [document.getElementById('lensBtn1'), document.getElementById('lensBtn2'), document.getElementById('lensBtn3')];
         lensButtons.forEach(btn => {
             btn.addEventListener('click', (event) => {
@@ -562,9 +560,9 @@ function setupDesktopControls() {
                 if (btn.id === 'lensBtn1') {
                     camera.fov = 80;
                 } else if (btn.id === 'lensBtn2') {
-                    camera.fov = 50; // Zoom in
+                    camera.fov = 50; 
                 } else if (btn.id === 'lensBtn3') {
-                    camera.fov = 100; // Zoom out
+                    camera.fov = 100; 
                 }
                 camera.updateProjectionMatrix();
             });
@@ -1706,16 +1704,16 @@ openInNewTabButton.addEventListener('click', (event) => {
         hintPanel.style.display = 'block';
         hintButton.style.opacity = '0.5';
         if (isInIframe) {
-            hintPanel.style.width = '250px'; /* Iframe mode width */
-            hintPanel.style.height = '510px'; /* Explicit height */
-            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="550px" style="border:none; overflow:hidden; display:block;"></iframe>'; /* Iframe height is 750px - 10px */
+            hintPanel.style.width = '250px'; 
+            hintPanel.style.height = '510px'; 
+            hintPanel.innerHTML = '<button id="hintCloseButton">X</button><iframe src="https://decentralize-dfw.github.io/c2w2runway/hint1.html" width="100%" height="550px" style="border:none; overflow:hidden; display:block;"></iframe>'; 
             const hintCloseButton = document.getElementById('hintCloseButton');
             hintCloseButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 hintPanel.style.display = 'none';
                 hintButton.style.opacity = '1';
-                hintPanel.style.width = '375px'; /* Reset to default width */
-                hintPanel.style.height = '750px'; /* Reset to default height */
+                hintPanel.style.width = '375px'; 
+                hintPanel.style.height = '750px'; 
             });
         }
         projectInfoPanel.style.display = 'none';
