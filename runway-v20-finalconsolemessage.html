@@ -292,13 +292,13 @@ border-color: rgba(255,255,255,.6);
             
             /* YENİ - Responsive Font: Ekran genişliğine göre ölçeklenir */
             /* clamp(min, tercih_edilen, max) */
-            font-size: clamp(7px, 0.65vw, 14px);
+            font-size: min(0.65vw, 14px);
 
             line-height: 1.6;
             text-align: left; 
             
             /* YENİ - Hız: 100 saniyeye yavaşlatıldı */
-            transition: transform 100s linear; 
+            transition: transform 68s linear; 
 
             white-space: pre; /* ASCII art'ın bozulmaması için */
         }
@@ -948,6 +948,7 @@ const modelDescriptions = [
     'Tobby Millefuille.',
     'Junya.',
     'Elextrogxd.',
+    'Davicni.',  
     'Xoqou.',
     'FeLiNa.'
 ];
@@ -984,7 +985,7 @@ const modelDescriptions = [
         const intersects = raycaster.intersectObjects(scene.children, true);
         for (let i = 0; i < intersects.length; i++) {
             if (intersects[i].object.name === 'balls' || intersects[i].object.name === 'Body') {
-                window.open('https://www.digitalforgerywork.shop/c2w2', '_blank');
+                window.open('https://c2w2.art/', '_blank');
                 break;
             }
         }
@@ -1364,61 +1365,56 @@ if (sound6Buffer) {
 
 
     async function showScrollingText() {
-        console.log("HERE COMES THAT MESSAGE ON THE SCREEN! LFG. WE'RE F EARLY. SHOW ME YOUR ART. DROP BELOW. SORRY WRONG BOT. SORRY, AGENT. LOOOOOLLLL. xD");
-        try {
-            const response = await fetch('https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/refs/heads/main/finalconsole.txt');
-            if (!response.ok) {
-                console.error("Metin dosyası alınamadı:", response.statusText);
-                return;
-            }
-            const text = await response.text();
-            
-            const container = document.getElementById('scrollingTextContainer');
-            const content = document.getElementById('scrollingTextContent');
+        console.log("HERE COMES THAT MESSAGE ON THE SCREEN! LFG. WE'RE F EARLY. SHOW ME YOUR ART. DROP BELOW. SORRY WRONG BOT. SORRY, AGENT. LOOOOOLLLL. xD");
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/decentralize-dfw/c2w2runway/refs/heads/main/finalconsole.txt');
+            if (!response.ok) {
+                console.error("Metin dosyası alınamadı:", response.statusText);
+                return;
+            }
+            const text = await response.text();
+            
+            const container = document.getElementById('scrollingTextContainer');
+            const content = document.getElementById('scrollingTextContent');
 
-            content.textContent = text; 
-            
-            // --- Animasyon Sekansı ---
+            content.textContent = text; 
+            
+            // --- Animasyon Sekansı (Düzeltilmiş Zamanlamalarla) ---
 
-            // 1. Fade-in
-            container.style.transition = 'opacity 1s ease'; 
-            container.style.display = 'block';
-            await wait(0.1); 
-            container.style.opacity = '1';
-            await wait(1); 
+            // 1. Fade-in (1 saniye)
+            container.style.transition = 'opacity 1s ease'; 
+            container.style.display = 'block';
+            await wait(0.1); 
+            container.style.opacity = '1';
+            await wait(1); // 1 saniye fade-in'in bitmesini bekle
 
-            // 2. Metnin başını 3 saniye göster
-            content.style.transition = 'none'; 
-            content.style.transform = 'translateY(90vh)'; 
-            await wait(3); 
+            // 2. Metnin başını 3 saniye göster
+            content.style.transition = 'none'; 
+            content.style.transform = 'translateY(90vh)'; 
+            await wait(3); // 3 saniye bekle
 
-            // 3. Kaydırmayı başlat
-            
-            // YENİ - Hız: 100 saniye (CSS ile eşleşiyor)
-            content.style.transition = 'transform 100s linear'; 
-            
-            content.style.transform = 'translateY(-100%)'; 
-            
-            // YENİ - Bekleme: 100 saniye (CSS ile eşleşiyor)
-            await wait(100); 
+            // 3. Kaydırmayı başlat (68 saniye)
+            content.style.transition = 'transform 68s linear'; 
+            content.style.transform = 'translateY(-100%)'; 
+            await wait(68); // 68 saniye animasyonun bitmesini bekle
 
-            // 4. 5 saniye dur 
-            await wait(5);
+            // 4. 5 saniye dur 
+            await wait(5);
 
-            // 5. Fade out
-            container.style.transition = 'opacity 3s ease'; 
-            container.style.opacity = '0';
-            await wait(3); 
+            // 5. Fade out (3 saniye)
+            container.style.transition = 'opacity 3s ease'; 
+            container.style.opacity = '0';
+            await wait(3); // 3 saniye fade-out'un bitmesini bekle
 
-            // 6. Temizle
-            container.style.display = 'none';
-            content.style.transition = 'none'; 
-            content.style.transform = 'translateY(100vh)'; 
+            // 6. Temizle
+            container.style.display = 'none';
+            content.style.transition = 'none'; 
+            content.style.transform = 'translateY(100vh)'; 
 
-        } catch (error) {
-            console.error("CAN T SHOW THE TEXT FFS.", error);
-        }
-    }
+        } catch (error) {
+            console.error("CAN T SHOW THE TEXT FFS.", error);
+        }
+    }
 
 async function runSequence() {
     experienceRunning = true;
@@ -1429,8 +1425,8 @@ async function runSequence() {
         await loadModel(1);
             await wait(vrControlsActive ? 10 : 5);
             document.getElementById('initiating').style.display = 'none';
-            animateModel(1);
             playSound1();
+             animateModel(1);
             await wait(15);
             await loadModel(2);
             await wait(15);
@@ -1715,32 +1711,29 @@ async function runSequence() {
             await wait(14.5);
             deleteModel(27);
             animateModel(49);
-            await wait(83);
-            deleteModel(49);
-            await wait(2);
-            stopSound6();
-            await printFinalText();
+            if (!vrControlsActive) {
+                showScrollingText(); // <-- `await` YOK.
+            }
+            
+           
+            await wait(80);
+            
+            
+            deleteModel(49);
+            await wait(2);
+            stopSound6();
 
 
-        } catch (error) {
-            console.error(`Sequence error at model ${models.length || 'unknown'}:`, error);
- } finally {
+       } catch (error) {
+            console.error(`Sequence error at model ${models.length || 'unknown'}:`, error);
+        } finally {
             document.getElementById('initiating').style.display = 'none';
             
-            document.getElementById('ended').style.display = 'block';
+            document.getElementById('ended').style.display = 'block';
             await wait(3);
             document.getElementById('ended').style.display = 'none';
 
-            // ===========================================
-            // === VR KONTROLÜ EKLENDİ (BAŞLANGIÇ) ===
-            // ===========================================
-            // Jeneriği SADECE VR modda DEĞİLSEK göster
-            if (!vrControlsActive) { 
-                await showScrollingText();
-            }
-            // ===========================================
-            // === VR KONTROLÜ (BİTİŞ) ===
-            // ===========================================
+       
 
             if (!vrControlsActive) {
                 document.getElementById('startButton').style.display = 'block';
